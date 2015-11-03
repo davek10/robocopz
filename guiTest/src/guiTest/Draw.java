@@ -3,8 +3,6 @@ package guiTest;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
-
 import javax.swing.JPanel;
 
 public class Draw extends JPanel{

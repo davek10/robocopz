@@ -1,16 +1,16 @@
 package guiTest;
 
-import java.awt.BorderLayout;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import javax.swing.JTextPane;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 
-import java.awt.Component;
 import java.awt.Font;
 import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
@@ -20,23 +20,31 @@ import java.util.Map;
 import javax.swing.Action;
 
 public class GUI extends JFrame {
-	
+	// Height of title bar at the top of window
+	int titleHeight = 43;
+	// size of border
 	int border = 5;
+	// width of window
 	int width = 1920;
+	// height of windows
 	int height = 1080;
-	int headHight = 50;
-	int xWindow = 0;
-	int yWindow = 0;
-	public static ArrayList<DirChoice> path = new ArrayList();
-	
-	
-	
-	
-	
-	
-	JButton button1 = new JButton();
-
+	// height of header
+	int headHeight = 50;
+	//xWindow = total number of snap-points in x
+	int xWindow = 3;
+	//yWindow = total number of snap-points in y
+	int yWindow = 5;
+	// ArrayList for path
+	public static ArrayList<DirChoice> path = new ArrayList<DirChoice>();
+	// Button for mode
+	JButton mode = new JButton();
+	// The windows panel
 	private JPanel panel;
+	//screen height - without border, height of title bar and header
+	int fullHeight = height-headHeight-2*border-titleHeight;
+	
+	// width for 1 screen-snap-unit. 
+	int winWidth = (width-(xWindow+4)*border)/xWindow;
 	
 
 	public static void main(String[] args) {
@@ -44,8 +52,9 @@ public class GUI extends JFrame {
 		//path.add(new DirChoice(true, false, true, 2));
 		//path.add(new DirChoice(true, false, true, 3));
 
-		
+		// Code for enabling events when pressing buttons
 		EventQueue.invokeLater(new Runnable() {
+			// Run method for the frame
 			public void run() {
 				try {
 					GUI frame = new GUI();
@@ -57,27 +66,20 @@ public class GUI extends JFrame {
 		});
 	}
 
-
+	// Returns the bounds of a pane given start and end. 
 	public int[] getBound(int xStart,int yStart,int xEnd,int yEnd){
+		// The bounds of a window pane
 		int[] bound = new int[4];
 		
-		//screen height - without border
-		int fullHeight = height-headHight-2*border-43;
-		
-		// width for 1 screen-snap-unit
-		int winWidth = (width-(xWindow+4)*border)/xWindow;
-		
-		//
-		int winHeight = fullHeight*(yEnd-yStart)/yWindow-yWindow;
-		
-
+		// x position for pane
 		bound[0] = border+xStart*(border+winWidth);
-		bound[1] = headHight+(2*border+(yStart)*(border+winHeight));
+		// y position for pane
+		bound[1] = headHeight+(2*border+(yStart)*(border+fullHeight/yWindow));
+		// width of pane
 		bound[2] = (xEnd-xStart)*winWidth;
-		bound[3] = winHeight; 
-		
-		System.out.println(bound[0]);
-		System.out.println(winWidth+"win");
+		// height of pane
+		bound[3] = fullHeight*(yEnd-yStart)/yWindow;
+
 		return bound;
 	}
 	
@@ -92,18 +94,6 @@ public class GUI extends JFrame {
 		String t4 = "t4";
 
 		String headText = "\t\t ROBOKAPPA";
-		
-		//xWindow = total nr of snappoints in x-dir
-		//snappoints numbered 0-5
-		xWindow = 3;
-		
-		//yWindow = total nr of snappoints in y-dir
-		//snappoints numbered 0-5
-		yWindow = 5;
-		
-		int fullHeight = height-headHight-2*border-43;
-		int winWidth = (width-(xWindow+4)*border)/xWindow;
-		int winHeight = fullHeight/yWindow-yWindow;
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(0, 0, width, height);
@@ -120,19 +110,25 @@ public class GUI extends JFrame {
 				border,
 				border,
 				width,
-				headHight);
+				headHeight);
 		head.setText(headText);
 		panel.add(head);
+		// Center text in header
+		StyledDocument doc = head.getStyledDocument();
+		SimpleAttributeSet center = new SimpleAttributeSet();
+		StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
+		doc.setParagraphAttributes(0, doc.getLength(), center, false);
+		
 		
 		int[] bound;
 
 		JTextPane pane1 = new JTextPane();
-		bound = getBound(0, 0, 1, 4);
+		bound = getBound(0, 0, 1, 2);
 		pane1.setBounds(bound[0],bound[1],bound[2],bound[3]);
 		pane1.setText(t1);
 		panel.add(pane1);
 		
-		bound = getBound(1, 0, 2, 4);
+		bound = getBound(0, 2, 1, 4);
 		JTextPane pane2 = new JTextPane();
 		pane2.setBounds(bound[0],bound[1],bound[2],bound[3]);
 		pane2.setText(t2);
@@ -144,14 +140,12 @@ public class GUI extends JFrame {
 		pane3.setText(t3);
 		panel.add(pane3);
 		
-
-		
-		Action action = new Button1Action();
-		button1.setAction(action);
+		Action action = new ModeAction();
+		mode.setAction(action);
 		bound = getBound(2, 2, 3, 3);
-		button1.setBounds(bound[0],bound[1],bound[2],bound[3]);
-		button1.setText(t4);
-		panel.add(button1);
+		mode.setBounds(bound[0],bound[1],bound[2],bound[3]);
+		mode.setText(t4);
+		panel.add(mode);
 		
 		JPanel minimap = new JPanel();
 		bound = getBound(2, 3, 3, 5);
@@ -159,14 +153,15 @@ public class GUI extends JFrame {
 		panel.add(minimap);
 			
 	}
-	private class Button1Action extends AbstractAction {
+	// Action for button mode
+	private class ModeAction extends AbstractAction {
 		int counter = 1;
 		public void actionPerformed(ActionEvent e) {
 			counter*=-1;
 			if (counter>0){
-			button1.setText("t44");
+			mode.setText("Robo");
 		}else{
-			button1.setText("t45");
+			mode.setText("Kappa");
 		}
 			}
 	}
