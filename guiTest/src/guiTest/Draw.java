@@ -18,7 +18,6 @@ public class Draw extends JPanel{
 		this.setBackground(Color.WHITE);
 		g.setColor(Color.BLACK);
 		//g.
-		Image image = new Image();
 		draw(g);
 	}
 }

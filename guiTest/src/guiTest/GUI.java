@@ -22,8 +22,8 @@ import javax.swing.Action;
 public class GUI extends JFrame {
 	
 	int border = 5;
-	int width = 640;
-	int height = 480;
+	int width = 1920;
+	int height = 1080;
 	int headHight = 50;
 	int xWindow = 0;
 	int yWindow = 0;
@@ -40,9 +40,9 @@ public class GUI extends JFrame {
 	
 
 	public static void main(String[] args) {
-		path.add(new DirChoice(true, false, true, 1));
-		path.add(new DirChoice(true, false, true, 2));
-		path.add(new DirChoice(true, false, true, 3));
+		//path.add(new DirChoice(true, false, true, 1));
+		//path.add(new DirChoice(true, false, true, 2));
+		//path.add(new DirChoice(true, false, true, 3));
 
 		
 		EventQueue.invokeLater(new Runnable() {
@@ -61,8 +61,13 @@ public class GUI extends JFrame {
 	public int[] getBound(int xStart,int yStart,int xEnd,int yEnd){
 		int[] bound = new int[4];
 		
+		//screen height - without border
 		int fullHeight = height-headHight-2*border-43;
+		
+		// width for 1 screen-snap-unit
 		int winWidth = (width-(xWindow+4)*border)/xWindow;
+		
+		//
 		int winHeight = fullHeight*(yEnd-yStart)/yWindow-yWindow;
 		
 
@@ -114,7 +119,7 @@ public class GUI extends JFrame {
 		head.setBounds(
 				border,
 				border,
-				(winWidth)*xWindow+ (xWindow-1)*border,
+				width,
 				headHight);
 		head.setText(headText);
 		panel.add(head);

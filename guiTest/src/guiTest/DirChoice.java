@@ -1,11 +1,5 @@
 package guiTest;
 
-public enum Status{
-	OPEN,CLOSE,UNKNOWN;
-}
-
-
-
 public class DirChoice {
 	DirChoice north,east,south,west;
 	int dir, length;
