@@ -45,13 +45,15 @@ public class GUI extends JFrame {
 	private JPanel panel;
 	//screen height - without border, height of title bar and header
 	int fullHeight = height-headHeight-2*border-titleHeight;
-	
+
 	// width for 1 screen-snap-unit. 
 	int winWidth = (width-(xWindow+4)*border)/xWindow;
-	
+
+	// Boolean for checking if a button is currently pressed down
 	boolean buttonPressed = false;
+	// Char for storing pressed down button
 	char button;
-	
+
 
 	public static void main(String[] args) {
 		//path.add(new DirChoice(true, false, true, 1));
@@ -76,7 +78,7 @@ public class GUI extends JFrame {
 	public int[] getBound(int xStart,int yStart,int xEnd,int yEnd){
 		// The bounds of a window pane
 		int[] bound = new int[4];
-		
+
 		// x position for pane
 		bound[0] = border+xStart*(border+winWidth);
 		// y position for pane
@@ -88,15 +90,15 @@ public class GUI extends JFrame {
 
 		return bound;
 	}
-	
-	
+
+
 	public GUI() {
 		String t1 = "t1";
-		
+
 		String t2 = "t2";
-		
+
 		String t3 = "t3";
-		
+
 		String t4 = "t4";
 
 		String headText = "\t\t ROBOKAPPA";
@@ -107,9 +109,9 @@ public class GUI extends JFrame {
 		panel.setBorder(new EmptyBorder(border, border, border, border));
 		setContentPane(panel);
 		panel.setLayout(null);
-		
-		
-		
+
+
+
 		JTextPane head = new JTextPane();
 		head.setFont(new Font("Arial", Font.PLAIN, 43));
 		head.setBounds(
@@ -124,8 +126,8 @@ public class GUI extends JFrame {
 		SimpleAttributeSet center = new SimpleAttributeSet();
 		StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
 		doc.setParagraphAttributes(0, doc.getLength(), center, false);
-		
-		
+
+
 		int[] bound;
 
 		JTextPane pane1 = new JTextPane();
@@ -133,31 +135,31 @@ public class GUI extends JFrame {
 		pane1.setBounds(bound[0],bound[1],bound[2],bound[3]);
 		pane1.setText(t1);
 		panel.add(pane1);
-		
+
 		bound = getBound(0, 2, 1, 4);
 		JTextPane pane2 = new JTextPane();
 		pane2.setBounds(bound[0],bound[1],bound[2],bound[3]);
 		pane2.setText(t2);
 		panel.add(pane2);
-		
+
 		bound = getBound(2, 0, 3, 2);
 		JTextPane pane3 = new JTextPane();
 		pane3.setBounds(bound[0],bound[1],bound[2],bound[3]);
 		pane3.setText(t3);
 		panel.add(pane3);
-		
+
 		Action action = new ModeAction();
 		mode.setAction(action);
 		bound = getBound(2, 2, 3, 3);
 		mode.setBounds(bound[0],bound[1],bound[2],bound[3]);
 		mode.setText(t4);
 		panel.add(mode);
-		
+
 		JPanel minimap = new JPanel();
 		bound = getBound(2, 3, 3, 5);
 		minimap.setBounds(bound[0], bound[1], bound[2], bound[3]);
 		panel.add(minimap);
-		
+
 		// Setting up keystrokes for W,A,S,D. Not finished currently
 		panel.getInputMap().put(KeyStroke.getKeyStroke("W"), "forward");
 		panel.getActionMap().put("forward", forward);
@@ -167,7 +169,7 @@ public class GUI extends JFrame {
 		panel.getActionMap().put("backward", backward);
 		panel.getInputMap().put(KeyStroke.getKeyStroke("D"), "rotate right");
 		panel.getActionMap().put("rotate right", rotateRight);
-		
+
 		//Setting up keystrokes for releasing W,A,S,D
 		panel.getInputMap().put(KeyStroke.getKeyStroke("released W"), "releasedForward");
 		panel.getActionMap().put("releasedForward", releasedForward);
@@ -184,18 +186,18 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			counter*=-1;
 			if (counter>0){
-			mode.setText("Auto");
+				mode.setText("Auto");
 			}else{
-			mode.setText("Control");
+				mode.setText("Control");
 			}
 		}
 	}
 
 	// Action for every movement of the robot
 	Action forward = new AbstractAction(){
-			public void actionPerformed(ActionEvent e){
-				if(!buttonPressed){
-					// Tell robot to go forwards (until we tell it to stop)
+		public void actionPerformed(ActionEvent e){
+			if(!buttonPressed){
+				// Tell robot to go forwards (until we tell it to stop)
 				System.out.println("forward");
 				buttonPressed = true;
 				button = 'W';
@@ -206,67 +208,67 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(!buttonPressed){
 				// Tell robot to go backwards (until we tell it to stop)
-			System.out.println("backward");
-			buttonPressed = true;
-			button = 'S';
-		}
+				System.out.println("backward");
+				buttonPressed = true;
+				button = 'S';
+			}
 		}
 	};
 	Action rotateLeft = new AbstractAction(){
 		public void actionPerformed(ActionEvent e){
 			if(!buttonPressed){
 				// Tell robot to rotate left (until we tell it to stop)
-			System.out.println("rotate left");
-			buttonPressed = true;
-			button = 'A';
-		}
+				System.out.println("rotate left");
+				buttonPressed = true;
+				button = 'A';
+			}
 		}
 	};
 	Action rotateRight = new AbstractAction(){
 		public void actionPerformed(ActionEvent e){
 			if(!buttonPressed){
 				// Tell robot to rotate right (until we tell it to stop)
-			System.out.println("rotate right");
-			buttonPressed = true;
-			button = 'D';
+				System.out.println("rotate right");
+				buttonPressed = true;
+				button = 'D';
+			}
 		}
-	}
 	};
 	// Action for stopping the robot
 	Action releasedForward = new AbstractAction(){
 		public void actionPerformed(ActionEvent e){
 			if(button == 'W'){
 				// Tell robot to stop
-			System.out.println("stop forward");
-			buttonPressed = false;
+				System.out.println("stop forward");
+				buttonPressed = false;
+			}
 		}
-	}
-};
-Action releasedBackward = new AbstractAction(){
-	public void actionPerformed(ActionEvent e){
-		if(button == 'S'){
-			// Tell robot to stop
-		System.out.println("stop backward");
-		buttonPressed = false;
-	}
-	}
-};
-Action stopLeft = new AbstractAction(){
-	public void actionPerformed(ActionEvent e){
-		if(button == 'A'){
-			// Tell robot to stop
-		System.out.println("stop left");
-		buttonPressed = false;
-	}
-	}
-};
-Action stopRight = new AbstractAction(){
-	public void actionPerformed(ActionEvent e){
-		if(button == 'D'){
-			// Tell robot to stop
-		System.out.println("stop right");
-		buttonPressed = false;
-	}
-}
-};	
+	};
+	Action releasedBackward = new AbstractAction(){
+		public void actionPerformed(ActionEvent e){
+			if(button == 'S'){
+				// Tell robot to stop
+				System.out.println("stop backward");
+				buttonPressed = false;
+			}
+		}
+	};
+	Action stopLeft = new AbstractAction(){
+		public void actionPerformed(ActionEvent e){
+			if(button == 'A'){
+				// Tell robot to stop
+				System.out.println("stop left");
+				buttonPressed = false;
+			}
+		}
+	};
+	Action stopRight = new AbstractAction(){
+		public void actionPerformed(ActionEvent e){
+			if(button == 'D'){
+				// Tell robot to stop
+				System.out.println("stop right");
+				buttonPressed = false;
+			}
+		}
+	};	
 }
