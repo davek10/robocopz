@@ -49,6 +49,9 @@ public class GUI extends JFrame {
 	// width for 1 screen-snap-unit. 
 	int winWidth = (width-(xWindow+4)*border)/xWindow;
 	
+	boolean buttonPressed = false;
+	char button;
+	
 
 	public static void main(String[] args) {
 		//path.add(new DirChoice(true, false, true, 1));
@@ -155,15 +158,25 @@ public class GUI extends JFrame {
 		minimap.setBounds(bound[0], bound[1], bound[2], bound[3]);
 		panel.add(minimap);
 		
-		// Setting upp keystrokes for W,A,S,D. Not finished currently
-		panel.getInputMap().put(KeyStroke.getKeyStroke("released W"), "forward");
+		// Setting up keystrokes for W,A,S,D. Not finished currently
+		panel.getInputMap().put(KeyStroke.getKeyStroke("W"), "forward");
 		panel.getActionMap().put("forward", forward);
-		panel.getInputMap().put(KeyStroke.getKeyStroke("released A"), "rotate left");
+		panel.getInputMap().put(KeyStroke.getKeyStroke("A"), "rotate left");
 		panel.getActionMap().put("rotate left", rotateLeft);
-		panel.getInputMap().put(KeyStroke.getKeyStroke("released S"), "backward");
+		panel.getInputMap().put(KeyStroke.getKeyStroke("S"), "backward");
 		panel.getActionMap().put("backward", backward);
-		panel.getInputMap().put(KeyStroke.getKeyStroke("released D"), "rotate right");
+		panel.getInputMap().put(KeyStroke.getKeyStroke("D"), "rotate right");
 		panel.getActionMap().put("rotate right", rotateRight);
+		
+		//Setting up keystrokes for releasing W,A,S,D
+		panel.getInputMap().put(KeyStroke.getKeyStroke("released W"), "releasedForward");
+		panel.getActionMap().put("releasedForward", releasedForward);
+		panel.getInputMap().put(KeyStroke.getKeyStroke("released A"), "stop left");
+		panel.getActionMap().put("stop left", stopLeft);
+		panel.getInputMap().put(KeyStroke.getKeyStroke("released S"), "releasedBackward");
+		panel.getActionMap().put("releasedBackward", releasedBackward);
+		panel.getInputMap().put(KeyStroke.getKeyStroke("released D"), "stop right");
+		panel.getActionMap().put("stop right", stopRight);
 	}
 	// Action for button mode
 	private class ModeAction extends AbstractAction {
@@ -177,26 +190,83 @@ public class GUI extends JFrame {
 			}
 		}
 	}
+
 	// Action for every movement of the robot
 	Action forward = new AbstractAction(){
-		public void actionPerformed(ActionEvent e){
-			System.out.println("forward");
+			public void actionPerformed(ActionEvent e){
+				if(!buttonPressed){
+					// Tell robot to go forwards (until we tell it to stop)
+				System.out.println("forward");
+				buttonPressed = true;
+				button = 'W';
+			}
 		}
 	};
 	Action backward = new AbstractAction(){
 		public void actionPerformed(ActionEvent e){
+			if(!buttonPressed){
+				// Tell robot to go backwards (until we tell it to stop)
 			System.out.println("backward");
+			buttonPressed = true;
+			button = 'S';
+		}
 		}
 	};
 	Action rotateLeft = new AbstractAction(){
 		public void actionPerformed(ActionEvent e){
+			if(!buttonPressed){
+				// Tell robot to rotate left (until we tell it to stop)
 			System.out.println("rotate left");
+			buttonPressed = true;
+			button = 'A';
+		}
 		}
 	};
 	Action rotateRight = new AbstractAction(){
 		public void actionPerformed(ActionEvent e){
+			if(!buttonPressed){
+				// Tell robot to rotate right (until we tell it to stop)
 			System.out.println("rotate right");
+			buttonPressed = true;
+			button = 'D';
 		}
+	}
 	};
-	
+	// Action for stopping the robot
+	Action releasedForward = new AbstractAction(){
+		public void actionPerformed(ActionEvent e){
+			if(button == 'W'){
+				// Tell robot to stop
+			System.out.println("stop forward");
+			buttonPressed = false;
+		}
+	}
+};
+Action releasedBackward = new AbstractAction(){
+	public void actionPerformed(ActionEvent e){
+		if(button == 'S'){
+			// Tell robot to stop
+		System.out.println("stop backward");
+		buttonPressed = false;
+	}
+	}
+};
+Action stopLeft = new AbstractAction(){
+	public void actionPerformed(ActionEvent e){
+		if(button == 'A'){
+			// Tell robot to stop
+		System.out.println("stop left");
+		buttonPressed = false;
+	}
+	}
+};
+Action stopRight = new AbstractAction(){
+	public void actionPerformed(ActionEvent e){
+		if(button == 'D'){
+			// Tell robot to stop
+		System.out.println("stop right");
+		buttonPressed = false;
+	}
+}
+};	
 }
