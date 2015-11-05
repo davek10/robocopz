@@ -1,6 +1,8 @@
 package guiTest;
 
 import java.awt.EventQueue;
+import javax.swing.InputMap;
+import javax.swing.ActionMap;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -9,6 +11,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 import javax.swing.JButton;
 
 import java.awt.Font;
@@ -25,9 +28,9 @@ public class GUI extends JFrame {
 	// size of border
 	int border = 5;
 	// width of window
-	int width = 1920;
+	int width = 640;
 	// height of windows
-	int height = 1080;
+	int height = 480;
 	// height of header
 	int headHeight = 50;
 	//xWindow = total number of snap-points in x
@@ -151,7 +154,16 @@ public class GUI extends JFrame {
 		bound = getBound(2, 3, 3, 5);
 		minimap.setBounds(bound[0], bound[1], bound[2], bound[3]);
 		panel.add(minimap);
-			
+		
+		// Setting upp keystrokes for W,A,S,D. Not finished currently
+		panel.getInputMap().put(KeyStroke.getKeyStroke("released W"), "forward");
+		panel.getActionMap().put("forward", forward);
+		panel.getInputMap().put(KeyStroke.getKeyStroke("released A"), "rotate left");
+		panel.getActionMap().put("rotate left", rotateLeft);
+		panel.getInputMap().put(KeyStroke.getKeyStroke("released S"), "backward");
+		panel.getActionMap().put("backward", backward);
+		panel.getInputMap().put(KeyStroke.getKeyStroke("released D"), "rotate right");
+		panel.getActionMap().put("rotate right", rotateRight);
 	}
 	// Action for button mode
 	private class ModeAction extends AbstractAction {
@@ -159,10 +171,32 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			counter*=-1;
 			if (counter>0){
-			mode.setText("Robo");
-		}else{
-			mode.setText("Kappa");
-		}
+			mode.setText("Auto");
+			}else{
+			mode.setText("Control");
 			}
+		}
 	}
+	// Action for every movement of the robot
+	Action forward = new AbstractAction(){
+		public void actionPerformed(ActionEvent e){
+			System.out.println("forward");
+		}
+	};
+	Action backward = new AbstractAction(){
+		public void actionPerformed(ActionEvent e){
+			System.out.println("backward");
+		}
+	};
+	Action rotateLeft = new AbstractAction(){
+		public void actionPerformed(ActionEvent e){
+			System.out.println("rotate left");
+		}
+	};
+	Action rotateRight = new AbstractAction(){
+		public void actionPerformed(ActionEvent e){
+			System.out.println("rotate right");
+		}
+	};
+	
 }
