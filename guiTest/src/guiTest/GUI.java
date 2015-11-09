@@ -1,6 +1,7 @@
 package guiTest;
 
 import java.awt.EventQueue;
+
 import javax.swing.InputMap;
 import javax.swing.ActionMap;
 
@@ -18,7 +19,9 @@ import java.awt.Font;
 import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 
 import javax.swing.Action;
 
@@ -28,9 +31,9 @@ public class GUI extends JFrame {
 	// size of border
 	int border = 5;
 	// width of window
-	int width = 640;
+	int width = 1280;
 	// height of windows
-	int height = 480;
+	int height = 720;
 	// height of header
 	int headHeight = 50;
 	//xWindow = total number of snap-points in x
@@ -39,6 +42,10 @@ public class GUI extends JFrame {
 	int yWindow = 5;
 	// ArrayList for path
 	public static ArrayList<DirChoice> path = new ArrayList<DirChoice>();
+	// Bluetooth data from the communications unit
+	byte[] btData = new byte[25];
+	// Queue used for the keyboard inputs
+	Queue<Pair> kInput = new LinkedList<Pair>();
 	// Button for mode
 	JButton mode = new JButton();
 	// The windows panel
@@ -93,9 +100,25 @@ public class GUI extends JFrame {
 
 
 	public GUI() {
-		String t1 = "t1";
+		for (int i = 0; i < 25; i++){
+			btData[i] = (byte) (i*5);
+		}
 
-		String t2 = "t2";
+		String t1 = "Servo: \n";
+		for (int j = 1; j < 19; j++){
+			t1 += j + ":" + btData[j] + "\n";
+		}
+		
+		for (int k = 0; k < 3; k++){
+			Pair t = new Pair("hej" ,k);
+			kInput.add(t);
+		}
+
+		String t2 = "Button \t Duration \n";
+		for(Object object : kInput) {
+			String element = (String) object.toString();
+			t2 += element + "\n";
+		}
 
 		String t3 = "t3";
 
@@ -130,23 +153,23 @@ public class GUI extends JFrame {
 
 		int[] bound;
 
-		JTextPane pane1 = new JTextPane();
-		bound = getBound(0, 0, 1, 2);
-		pane1.setBounds(bound[0],bound[1],bound[2],bound[3]);
-		pane1.setText(t1);
-		panel.add(pane1);
+		JTextPane Servos = new JTextPane();
+		bound = getBound(0, 0, 1, 4);
+		Servos.setBounds(bound[0],bound[1],bound[2],bound[3]);
+		Servos.setText(t1);
+		panel.add(Servos);
 
-		bound = getBound(0, 2, 1, 4);
-		JTextPane pane2 = new JTextPane();
-		pane2.setBounds(bound[0],bound[1],bound[2],bound[3]);
-		pane2.setText(t2);
-		panel.add(pane2);
+		bound = getBound(1, 0, 2, 4);
+		JTextPane Inputs = new JTextPane();
+		Inputs.setBounds(bound[0],bound[1],bound[2],bound[3]);
+		Inputs.setText(t2);
+		panel.add(Inputs);
 
 		bound = getBound(2, 0, 3, 2);
-		JTextPane pane3 = new JTextPane();
-		pane3.setBounds(bound[0],bound[1],bound[2],bound[3]);
-		pane3.setText(t3);
-		panel.add(pane3);
+		JTextPane Sensors = new JTextPane();
+		Sensors.setBounds(bound[0],bound[1],bound[2],bound[3]);
+		Sensors.setText(t3);
+		panel.add(Sensors);
 
 		Action action = new ModeAction();
 		mode.setAction(action);
