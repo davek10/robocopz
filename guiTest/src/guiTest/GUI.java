@@ -19,6 +19,7 @@ import java.awt.Font;
 import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
@@ -46,8 +47,21 @@ public class GUI extends JFrame {
 	byte[] btData = new byte[25];
 	// Queue used for the keyboard inputs
 	Queue<Pair> kInput = new LinkedList<Pair>();
+	private static final Map<Integer, String> sensorMap;
+    static
+    {
+        sensorMap = new HashMap<Integer, String>();
+        sensorMap.put(1, "Front");
+        sensorMap.put(2, "Front Right");
+        sensorMap.put(3, "Back Right");
+        sensorMap.put(4, "Back");
+        sensorMap.put(5, "Back Left");
+        sensorMap.put(6, "Front Left");
+    }
 	// Button for mode
 	JButton mode = new JButton();
+	// Mode for the robot
+	Mode robotMode = Mode.AUTO;
 	// The windows panel
 	private JPanel panel;
 	//screen height - without border, height of title bar and header
@@ -60,7 +74,6 @@ public class GUI extends JFrame {
 	boolean buttonPressed = false;
 	// Char for storing pressed down button
 	char button;
-
 
 	public static void main(String[] args) {
 		//path.add(new DirChoice(true, false, true, 1));
@@ -103,10 +116,9 @@ public class GUI extends JFrame {
 		for (int i = 0; i < 25; i++){
 			btData[i] = (byte) (i*5);
 		}
-
-		String t1 = "Servo: \n";
+		String servoText = "Servo \t Value \n";
 		for (int j = 1; j < 19; j++){
-			t1 += j + ":" + btData[j] + "\n";
+			servoText += j + ": \t" + btData[j] + "\n";
 		}
 		
 		for (int k = 0; k < 3; k++){
@@ -114,15 +126,19 @@ public class GUI extends JFrame {
 			kInput.add(t);
 		}
 
-		String t2 = "Button \t Duration \n";
+		String keyboardText = "Button \t Duration \n";
 		for(Object object : kInput) {
 			String element = (String) object.toString();
-			t2 += element + "\n";
+			keyboardText += element + "\n";
+		}
+		
+
+		String sensorText = "Sensor \t Value \n";
+		for( int l = 1; l < 7; l++){
+			sensorText += sensorMap.get(l) + ": \t" + btData[l + 18] + "\n";
 		}
 
-		String t3 = "t3";
-
-		String t4 = "t4";
+		String modeButtonText = robotMode.toString();
 
 		String headText = "\t\t ROBOKAPPA";
 
@@ -156,26 +172,26 @@ public class GUI extends JFrame {
 		JTextPane Servos = new JTextPane();
 		bound = getBound(0, 0, 1, 4);
 		Servos.setBounds(bound[0],bound[1],bound[2],bound[3]);
-		Servos.setText(t1);
+		Servos.setText(servoText);
 		panel.add(Servos);
 
 		bound = getBound(1, 0, 2, 4);
 		JTextPane Inputs = new JTextPane();
 		Inputs.setBounds(bound[0],bound[1],bound[2],bound[3]);
-		Inputs.setText(t2);
+		Inputs.setText(keyboardText);
 		panel.add(Inputs);
 
 		bound = getBound(2, 0, 3, 2);
 		JTextPane Sensors = new JTextPane();
 		Sensors.setBounds(bound[0],bound[1],bound[2],bound[3]);
-		Sensors.setText(t3);
+		Sensors.setText(sensorText);
 		panel.add(Sensors);
 
 		Action action = new ModeAction();
 		mode.setAction(action);
 		bound = getBound(2, 2, 3, 3);
 		mode.setBounds(bound[0],bound[1],bound[2],bound[3]);
-		mode.setText(t4);
+		mode.setText(modeButtonText);
 		panel.add(mode);
 
 		JPanel minimap = new JPanel();
@@ -209,10 +225,11 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			counter*=-1;
 			if (counter>0){
-				mode.setText("Auto");
+				robotMode = Mode.AUTO;
 			}else{
-				mode.setText("Control");
+				robotMode = Mode.CONTROL;
 			}
+			mode.setText(robotMode.toString());
 		}
 	}
 
