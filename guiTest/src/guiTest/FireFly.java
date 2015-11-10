@@ -83,6 +83,7 @@ public class FireFly {
 					buffer[len++] = (byte) data;
 				}
 				System.out.print(new String(buffer,0,len));
+				GUI.update(buffer);
 			}
 			catch ( IOException e )
 			{

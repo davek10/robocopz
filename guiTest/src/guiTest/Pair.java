@@ -1,6 +1,6 @@
 package guiTest;
 
-public class Pair<L,R> {
+public class Pair {
 
 	private final String left;
 	private final int right;

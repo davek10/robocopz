@@ -1,19 +1,7 @@
 package guiTest;
 
 import java.awt.EventQueue;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
-import javax.swing.JTextPane;
-import javax.swing.KeyStroke;
-import javax.swing.JButton;
-
 import java.awt.Font;
-import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +9,18 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
+
+import javax.swing.border.EmptyBorder;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 public class GUI extends JFrame {
 	// Height of title bar at the top of window
@@ -42,8 +41,8 @@ public class GUI extends JFrame {
 	public static ArrayList<DirChoice> path = new ArrayList<DirChoice>();
 	// Bluetooth data from the communications unit
 	public static byte[] btData = new byte[25];
-	// Queue used for the keyboard inputs
-	static Queue<Pair> kInput = new LinkedList<Pair>();
+	// ArrayList used for the keyboard inputs
+	public static ArrayList<Pair> kInput = new ArrayList<Pair>();
 	// ArrayList for decisions made by the robot. TODO add special datatype for this.
 	public static ArrayList<String> decisionsList = new ArrayList<String>();
 	// Text pane for the head
@@ -68,18 +67,22 @@ public class GUI extends JFrame {
 	static String headText;
 	// String for the decisions pane
 	static String decisionsText;
-	
+	// Timer for counting time button is pressed
+	long startTime;
+	// Duration of button pressed
+	long duration;
+	// Mapping integers to sensor positions
 	private static final Map<Integer, String> sensorMap;
-    static
-    {
-        sensorMap = new HashMap<Integer, String>();
-        sensorMap.put(1, "Front");
-        sensorMap.put(2, "Front Right");
-        sensorMap.put(3, "Back Right");
-        sensorMap.put(4, "Back");
-        sensorMap.put(5, "Back Left");
-        sensorMap.put(6, "Front Left");
-    }
+	static
+	{
+		sensorMap = new HashMap<Integer, String>();
+		sensorMap.put(0, "Front");
+		sensorMap.put(1, "Front Right");
+		sensorMap.put(2, "Back Right");
+		sensorMap.put(3, "Back");
+		sensorMap.put(4, "Back Left");
+		sensorMap.put(5, "Front Left");
+	}
 	// Button for mode
 	JButton mode = new JButton();
 	// Mode for the robot
@@ -128,7 +131,7 @@ public class GUI extends JFrame {
 		bound[2] = (xEnd-xStart)*winWidth;
 		// height of pane
 		bound[3] = fullHeight*(yEnd-yStart)/yWindow + (yEnd - yStart - 1) *border;
-	
+
 		return bound;
 	}
 
@@ -146,7 +149,7 @@ public class GUI extends JFrame {
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(0, 0, width, height);
-		
+
 		panel.setBorder(new EmptyBorder(border, border, border, border));
 		setContentPane(panel);
 		panel.setLayout(null);
@@ -184,7 +187,7 @@ public class GUI extends JFrame {
 		sensors.setText(sensorText);
 		sensors.setEditable(false);
 		panel.add(sensors);
-		
+
 		bound = getBound(1, 2, 2, 4);
 		decisions.setBounds(bound[0],bound[1],bound[2],bound[3]);
 		decisions.setText(decisionsText);
@@ -202,7 +205,7 @@ public class GUI extends JFrame {
 		bound = getBound(2, 3, 3, 5);
 		minimap.setBounds(bound[0], bound[1], bound[2], bound[3]);
 		panel.add(minimap);
-		
+
 
 		// Setting up keystrokes for W,A,S,D. Not finished currently
 		panel.getInputMap().put(KeyStroke.getKeyStroke("W"), "forward");
@@ -223,35 +226,60 @@ public class GUI extends JFrame {
 		panel.getActionMap().put("releasedBackward", releasedBackward);
 		panel.getInputMap().put(KeyStroke.getKeyStroke("released D"), "stop right");
 		panel.getActionMap().put("stop right", stopRight);
+
+		update(btData);
 	}
-	
+
 	public static void update(byte[] FireFlyData){
 		btData = FireFlyData;
+		updateServo(btData);
+		updateSensor(btData);
+		updateInput();
+		updateDecisions();
+	}
+	static private void updateServo(byte[] data){
 		servoText = "Servo \t Value \n";
-		// First 18 bits of the bluetooth data, bit 0-17. Servo information
+		// First 18 bits of the Bluetooth data, bit 0-17. Servo information
 		for (int j = 0; j < 18; j++){
-			servoText += (j + 1) + ": \t" + btData[j] + "\n";
-		}
+			servoText += (j + 1) + ": \t" + data[j] + "\n";
+		}		
 		servos.setText(servoText);
-		// Bit 18-24 of bluetooth data. Sensor information 
+
+	}
+	static private void updateSensor(byte[] data){
 		sensorText = "Sensor \t Value \n";
+		// Bit 18-24 of Bluetooth data. Sensor information 
 		for( int l = 18; l < 25; l++){
-			sensorText += sensorMap.get(l) + ": \t" + btData[l + 18] + "\n";
+			sensorText += sensorMap.get(l-18) + ": \t" + data[l] + "\n";
 		}
 		sensors.setText(sensorText);
-		// 
+
+	}
+	static private void updateInput(){
 		inputText = "Button \t Duration \n";
-		for(Object object : kInput) {
-			String element = (String) object.toString();
-			inputText += element + "\n";
+		int size = kInput.size();
+		// start of the iteration
+		int start = 0;
+		// Only show the last 14 keypresses
+		if(size > 14){
+			start = size - 14;
 		}
+		// Iterate through last 14 keyboard input typed
+		for(int i = start; i < size; i++){
+			String element = kInput.get(i).getLeft();
+			int duration = kInput.get(i).getRight();
+			inputText += element + "\t" + duration + "\n";
+		}	
 		inputs.setText(inputText);
-		
+	}
+	
+	static private void updateDecisions(){
 		decisionsText = "Decisions \n";
+		// Iterate every decision in decisionsList
 		for(String str: decisionsList){
 			decisionsText += str + "\n";
 		}
-		
+
 	}
 
 	// Action for button mode
@@ -274,6 +302,7 @@ public class GUI extends JFrame {
 			if(!buttonPressed){
 				// Tell robot to go forwards (until we tell it to stop)
 				System.out.println("forward");
+				startTime = System.currentTimeMillis();
 				buttonPressed = true;
 				button = 'W';
 			}
@@ -284,6 +313,7 @@ public class GUI extends JFrame {
 			if(!buttonPressed){
 				// Tell robot to go backwards (until we tell it to stop)
 				System.out.println("backward");
+				startTime = System.currentTimeMillis();
 				buttonPressed = true;
 				button = 'S';
 			}
@@ -294,6 +324,7 @@ public class GUI extends JFrame {
 			if(!buttonPressed){
 				// Tell robot to rotate left (until we tell it to stop)
 				System.out.println("rotate left");
+				startTime = System.currentTimeMillis();
 				buttonPressed = true;
 				button = 'A';
 			}
@@ -304,6 +335,7 @@ public class GUI extends JFrame {
 			if(!buttonPressed){
 				// Tell robot to rotate right (until we tell it to stop)
 				System.out.println("rotate right");
+				startTime = System.currentTimeMillis();
 				buttonPressed = true;
 				button = 'D';
 			}
@@ -315,6 +347,9 @@ public class GUI extends JFrame {
 			if(button == 'W'){
 				// Tell robot to stop
 				System.out.println("stop forward");
+				duration = (System.currentTimeMillis() - startTime);
+				kInput.add(new Pair("W" , (int) duration));
+				updateInput();
 				buttonPressed = false;
 			}
 		}
@@ -324,6 +359,9 @@ public class GUI extends JFrame {
 			if(button == 'S'){
 				// Tell robot to stop
 				System.out.println("stop backward");
+				duration = (System.currentTimeMillis() - startTime)/1000;
+				kInput.add(new Pair("S" , (int) duration));
+				updateInput();
 				buttonPressed = false;
 			}
 		}
@@ -333,6 +371,9 @@ public class GUI extends JFrame {
 			if(button == 'A'){
 				// Tell robot to stop
 				System.out.println("stop left");
+				duration = (System.currentTimeMillis() - startTime)/1000;
+				kInput.add(new Pair("A" , (int) duration));
+				updateInput();
 				buttonPressed = false;
 			}
 		}
@@ -342,6 +383,9 @@ public class GUI extends JFrame {
 			if(button == 'D'){
 				// Tell robot to stop
 				System.out.println("stop right");
+				duration = (System.currentTimeMillis() - startTime)/1000;
+				kInput.add(new Pair("D" , (int) duration));
+				updateInput();
 				buttonPressed = false;
 			}
 		}
