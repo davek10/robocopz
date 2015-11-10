@@ -43,23 +43,31 @@ public class GUI extends JFrame {
 	// Bluetooth data from the communications unit
 	public static byte[] btData = new byte[25];
 	// Queue used for the keyboard inputs
-	Queue<Pair> kInput = new LinkedList<Pair>();
+	static Queue<Pair> kInput = new LinkedList<Pair>();
+	// ArrayList for decisions made by the robot. TODO add special datatype for this.
+	public static ArrayList<String> decisionsList = new ArrayList<String>();
 	// Text pane for the head
-	JTextPane head = new JTextPane();
+	static JTextPane head = new JTextPane();
 	//Text pane for the servos data
-	JTextPane Servos = new JTextPane();
+	static JTextPane servos = new JTextPane();
 	//Text pane for the sensors data
-	JTextPane Sensors = new JTextPane();
+	static JTextPane sensors = new JTextPane();
 	//Text pane for the keyboard inputs
-	JTextPane Inputs = new JTextPane();
+	static JTextPane inputs = new JTextPane();
+	// Text pane for robot decisions
+	static JTextPane decisions = new JTextPane();
 	// String for the Servos pane
-	String servoText;
+	static String servoText;
 	// String for the inputs pane
-	String keyboardText;
-	// String for the sensorspane
-	String sensorText;
-	String modeButtonText;
-	String headText;
+	static String inputText;
+	// String for the sensors pane
+	static String sensorText;
+	// String for the modeButton
+	static String modeButtonText;
+	// String for the head pane
+	static String headText;
+	// String for the decisions pane
+	static String decisionsText;
 	
 	private static final Map<Integer, String> sensorMap;
     static
@@ -112,7 +120,6 @@ public class GUI extends JFrame {
 	public int[] getBound(int xStart,int yStart,int xEnd,int yEnd){
 		// The bounds of a window pane
 		int[] bound = new int[4];
-
 		// x position for pane
 		bound[0] = border+xStart*(border+winWidth);
 		// y position for pane
@@ -120,8 +127,8 @@ public class GUI extends JFrame {
 		// width of pane
 		bound[2] = (xEnd-xStart)*winWidth;
 		// height of pane
-		bound[3] = fullHeight*(yEnd-yStart)/yWindow;
-
+		bound[3] = fullHeight*(yEnd-yStart)/yWindow + (yEnd - yStart - 1) *border;
+	
 		return bound;
 	}
 
@@ -131,10 +138,11 @@ public class GUI extends JFrame {
 			btData[i] = (byte) (i*5);
 		}
 		servoText = "Servo \t Value \n";
-		keyboardText = "Button \t Duration \n";
+		inputText = "Button \t Duration \n";
 		sensorText = "Sensor \t Value \n";
 		modeButtonText = robotMode.toString();
 		headText = "\t\t ROBOKAPPA";
+		decisionsText = "Decisions \n";
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(0, 0, width, height);
@@ -159,21 +167,29 @@ public class GUI extends JFrame {
 
 
 		int[] bound;
-
 		bound = getBound(0, 0, 1, 4);
-		Servos.setBounds(bound[0],bound[1],bound[2],bound[3]);
-		Servos.setText(servoText);
-		panel.add(Servos);
+		servos.setBounds(bound[0],bound[1],bound[2],bound[3]);
+		servos.setText(servoText);
+		servos.setEditable(false);
+		panel.add(servos);
 
-		bound = getBound(1, 0, 2, 4);
-		Inputs.setBounds(bound[0],bound[1],bound[2],bound[3]);
-		Inputs.setText(keyboardText);
-		panel.add(Inputs);
+		bound = getBound(1, 0, 2, 2);
+		inputs.setBounds(bound[0],bound[1],bound[2],bound[3]);
+		inputs.setText(inputText);
+		inputs.setEditable(false);
+		panel.add(inputs);
 
 		bound = getBound(2, 0, 3, 2);
-		Sensors.setBounds(bound[0],bound[1],bound[2],bound[3]);
-		Sensors.setText(sensorText);
-		panel.add(Sensors);
+		sensors.setBounds(bound[0],bound[1],bound[2],bound[3]);
+		sensors.setText(sensorText);
+		sensors.setEditable(false);
+		panel.add(sensors);
+		
+		bound = getBound(1, 2, 2, 4);
+		decisions.setBounds(bound[0],bound[1],bound[2],bound[3]);
+		decisions.setText(decisionsText);
+		decisions.setEditable(false);
+		panel.add(decisions);
 
 		Action action = new ModeAction();
 		mode.setAction(action);
@@ -211,29 +227,30 @@ public class GUI extends JFrame {
 	
 	public static void update(byte[] FireFlyData){
 		btData = FireFlyData;
-		String servoText = "Servo \t Value \n";
-		for (int j = 1; j < 19; j++){
-			servoText += j + ": \t" + btData[j] + "\n";
+		servoText = "Servo \t Value \n";
+		// First 18 bits of the bluetooth data, bit 0-17. Servo information
+		for (int j = 0; j < 18; j++){
+			servoText += (j + 1) + ": \t" + btData[j] + "\n";
 		}
-		
-		for (int k = 0; k < 3; k++){
-			Pair t = new Pair("hej" ,k);
-			//kInput.add(t);
-		}
-
-		String keyboardText = "Button \t Duration \n";
-		/*
-		for(Object object : kInput) {
-			String element = (String) object.toString();
-			keyboardText += element + "\n";
-		}
-		*/
-
-		String sensorText = "Sensor \t Value \n";
-		for( int l = 1; l < 7; l++){
+		servos.setText(servoText);
+		// Bit 18-24 of bluetooth data. Sensor information 
+		sensorText = "Sensor \t Value \n";
+		for( int l = 18; l < 25; l++){
 			sensorText += sensorMap.get(l) + ": \t" + btData[l + 18] + "\n";
 		}
+		sensors.setText(sensorText);
+		// 
+		inputText = "Button \t Duration \n";
+		for(Object object : kInput) {
+			String element = (String) object.toString();
+			inputText += element + "\n";
+		}
+		inputs.setText(inputText);
 		
+		decisionsText = "Decisions \n";
+		for(String str: decisionsList){
+			decisionsText += str + "\n";
+		}
 		
 	}
 
