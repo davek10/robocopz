@@ -2,9 +2,6 @@ package guiTest;
 
 import java.awt.EventQueue;
 
-import javax.swing.InputMap;
-import javax.swing.ActionMap;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -44,9 +41,26 @@ public class GUI extends JFrame {
 	// ArrayList for path
 	public static ArrayList<DirChoice> path = new ArrayList<DirChoice>();
 	// Bluetooth data from the communications unit
-	byte[] btData = new byte[25];
+	public static byte[] btData = new byte[25];
 	// Queue used for the keyboard inputs
 	Queue<Pair> kInput = new LinkedList<Pair>();
+	// Text pane for the head
+	JTextPane head = new JTextPane();
+	//Text pane for the servos data
+	JTextPane Servos = new JTextPane();
+	//Text pane for the sensors data
+	JTextPane Sensors = new JTextPane();
+	//Text pane for the keyboard inputs
+	JTextPane Inputs = new JTextPane();
+	// String for the Servos pane
+	String servoText;
+	// String for the inputs pane
+	String keyboardText;
+	// String for the sensorspane
+	String sensorText;
+	String modeButtonText;
+	String headText;
+	
 	private static final Map<Integer, String> sensorMap;
     static
     {
@@ -63,7 +77,7 @@ public class GUI extends JFrame {
 	// Mode for the robot
 	Mode robotMode = Mode.AUTO;
 	// The windows panel
-	private JPanel panel;
+	private JPanel panel = new JPanel();
 	//screen height - without border, height of title bar and header
 	int fullHeight = height-headHeight-2*border-titleHeight;
 
@@ -116,42 +130,19 @@ public class GUI extends JFrame {
 		for (int i = 0; i < 25; i++){
 			btData[i] = (byte) (i*5);
 		}
-		String servoText = "Servo \t Value \n";
-		for (int j = 1; j < 19; j++){
-			servoText += j + ": \t" + btData[j] + "\n";
-		}
-		
-		for (int k = 0; k < 3; k++){
-			Pair t = new Pair("hej" ,k);
-			kInput.add(t);
-		}
-
-		String keyboardText = "Button \t Duration \n";
-		for(Object object : kInput) {
-			String element = (String) object.toString();
-			keyboardText += element + "\n";
-		}
-		
-
-		String sensorText = "Sensor \t Value \n";
-		for( int l = 1; l < 7; l++){
-			sensorText += sensorMap.get(l) + ": \t" + btData[l + 18] + "\n";
-		}
-
-		String modeButtonText = robotMode.toString();
-
-		String headText = "\t\t ROBOKAPPA";
+		servoText = "Servo \t Value \n";
+		keyboardText = "Button \t Duration \n";
+		sensorText = "Sensor \t Value \n";
+		modeButtonText = robotMode.toString();
+		headText = "\t\t ROBOKAPPA";
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(0, 0, width, height);
-		panel = new JPanel();
+		
 		panel.setBorder(new EmptyBorder(border, border, border, border));
 		setContentPane(panel);
 		panel.setLayout(null);
 
-
-
-		JTextPane head = new JTextPane();
 		head.setFont(new Font("Arial", Font.PLAIN, 43));
 		head.setBounds(
 				border,
@@ -169,20 +160,17 @@ public class GUI extends JFrame {
 
 		int[] bound;
 
-		JTextPane Servos = new JTextPane();
 		bound = getBound(0, 0, 1, 4);
 		Servos.setBounds(bound[0],bound[1],bound[2],bound[3]);
 		Servos.setText(servoText);
 		panel.add(Servos);
 
 		bound = getBound(1, 0, 2, 4);
-		JTextPane Inputs = new JTextPane();
 		Inputs.setBounds(bound[0],bound[1],bound[2],bound[3]);
 		Inputs.setText(keyboardText);
 		panel.add(Inputs);
 
 		bound = getBound(2, 0, 3, 2);
-		JTextPane Sensors = new JTextPane();
 		Sensors.setBounds(bound[0],bound[1],bound[2],bound[3]);
 		Sensors.setText(sensorText);
 		panel.add(Sensors);
@@ -198,6 +186,7 @@ public class GUI extends JFrame {
 		bound = getBound(2, 3, 3, 5);
 		minimap.setBounds(bound[0], bound[1], bound[2], bound[3]);
 		panel.add(minimap);
+		
 
 		// Setting up keystrokes for W,A,S,D. Not finished currently
 		panel.getInputMap().put(KeyStroke.getKeyStroke("W"), "forward");
@@ -219,6 +208,35 @@ public class GUI extends JFrame {
 		panel.getInputMap().put(KeyStroke.getKeyStroke("released D"), "stop right");
 		panel.getActionMap().put("stop right", stopRight);
 	}
+	
+	public static void update(byte[] FireFlyData){
+		btData = FireFlyData;
+		String servoText = "Servo \t Value \n";
+		for (int j = 1; j < 19; j++){
+			servoText += j + ": \t" + btData[j] + "\n";
+		}
+		
+		for (int k = 0; k < 3; k++){
+			Pair t = new Pair("hej" ,k);
+			//kInput.add(t);
+		}
+
+		String keyboardText = "Button \t Duration \n";
+		/*
+		for(Object object : kInput) {
+			String element = (String) object.toString();
+			keyboardText += element + "\n";
+		}
+		*/
+
+		String sensorText = "Sensor \t Value \n";
+		for( int l = 1; l < 7; l++){
+			sensorText += sensorMap.get(l) + ": \t" + btData[l + 18] + "\n";
+		}
+		
+		
+	}
+
 	// Action for button mode
 	private class ModeAction extends AbstractAction {
 		int counter = 1;

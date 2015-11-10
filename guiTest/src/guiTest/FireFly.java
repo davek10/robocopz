@@ -10,20 +10,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import java.awt.event.*;
-import java.awt.*; 
-
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
-
 public class FireFly {
-	/** Command to turn Accelerometer on */
-	static final String ACCELONSTRING = "AccelOn";
-	static final String ACCELOFFSTRING = "AccelOff";
-	static final String VIBREONSTRING = "VibreOn";
-	static final String VIBREOFFSTRING = "VibreOff";
-	static final String CALIBRATESTRING = "Calibrate";
+
 	/** Buffered input stream from the port */
 	static private InputStream in;
 	/** Output stream to the port */
@@ -62,145 +50,17 @@ public class FireFly {
 	            }
 	            else
 	            {
-	                System.out.println("Error: Das ist kein serieller Port!");
+	                System.out.println("Error: We can only use serial ports");
 	            }
 	        }     
 	    }
-	    
-	    static void accelOn(){
-	    	Boolean	sended = false;
-	    	
-	    if(!sended){
-	    	try {
-	    		
-				out.write(ACCELONSTRING.getBytes());
-				
 
-	    	} catch (IOException e) {
-	    		System.out.println("Fehler beim Senden");
-			}
-	    	
-	    }
-	    	sended =true;
-
-	    }
-	    
-	    static void accelOff(){
-	    	Boolean	sended = false;
-	    	
-		    if(!sended){
-		    	try {
-		    		
-					out.write(ACCELOFFSTRING.getBytes());
-					
-
-		    	} catch (IOException e) {
-		    		System.out.println("Fehler beim Senden");
-				}
-		    	
-		    }
-		    	sended =true;
-
-		    }
-	    
-	    static void vibreOn(){
-	    	Boolean	sended = false;
-	    	
-		    if(!sended){
-		    	try {
-		    		
-					out.write(VIBREONSTRING.getBytes());
-					
-
-		    	} catch (IOException e) {
-		    		System.out.println("Fehler beim Senden");
-				}
-		    	
-		    }
-		    	sended =true;
-
-		    }
-	    
-	    static void vibreOff(){
-	    	Boolean	sended = false;
-	    	
-		    if(!sended){
-		    	try {
-		    		
-					out.write(VIBREOFFSTRING.getBytes());
-					
-
-		    	} catch (IOException e) {
-		    		System.out.println("Fehler beim Senden");
-				}
-		    	
-		    }
-		    	sended =true;
-
-		    }
-	    
-	    static void calibrate(){
-	    	Boolean	sended = false;
-	    	
-		    if(!sended){
-		    	try {
-		    		
-					out.write(CALIBRATESTRING.getBytes());
-					
-
-		    	} catch (IOException e) {
-		    		System.out.println("Fehler beim Senden");
-				}
-		    	
-		    }
-		    	sended =true;
-
-		    }
-	    
-	    /**
-	     * Handles the keyboard input.
-	     * @param: 'A' toggles accelerometer on and off
-	     * @param: 'V' toggles vibro on and off
-	     */
-	    
-	    public class KeyReader implements KeyListener{
-	    	
-	    private boolean accelIsOn=false;
-		private boolean vibreIsOn=false;
-
-		public void	keyPressed(KeyEvent e ){
-	    	
-	    		
-	    	 	}
-	    
-	    public void keyTyped ( KeyEvent e ){  
-	    	 
-	    	 }  
-	    	 
-	    	  public void keyReleased ( KeyEvent e ){  
-	    	
-	    		  if(e.equals('A')){
-	    			  if(!accelIsOn){
-	    				  accelOn();
-	    				  accelIsOn=true;
-	    				  System.out.print(accelIsOn);
-	    			  }else{
-	    				  accelOff();
-	    				  accelIsOn=false;
-	    			  }
-	  	    	}
-	    		  if(e.equals('V')){
-	    			  if(!vibreIsOn){
-	    				  vibreOn();
-	    				  vibreIsOn=true;
-	    			  }else{
-	    				  vibreOff();
-	    				  vibreIsOn=false;
-	    			  }
-	  	    	}
-	    	  } 
-	    
-	    
+	    static void toRobot(byte b1){
+	    	try{
+	    		out.write(b1);
+	    	} catch (IOException e){
+	    		System.out.println("Unable to send bytes: " + b1);
+	    	}
 	    }
 	    
 	    /**
@@ -210,7 +70,7 @@ public class FireFly {
 	    public static class SerialReader implements SerialPortEventListener 
 	    {
 	        private InputStream in;
-	        private byte[] buffer = new byte[1024];
+	        private byte[] buffer = new byte[25];
 	        
 	        public SerialReader ( InputStream in )
 	        {
@@ -220,11 +80,6 @@ public class FireFly {
 	        public void serialEvent(SerialPortEvent arg0) {
 	            int data;
 	            
-	            //wenn daten kommen, dann schalte accel und vibro ein
-	            
-	            accelOn();
-	            vibreOn();
-	          
 	            try
 	            {
 	                int len = 0;
@@ -247,7 +102,6 @@ public class FireFly {
 
 	    }
 
-	    /** */
 	    public static class SerialWriter implements Runnable 
 	    {
 	        OutputStream out;
@@ -297,7 +151,6 @@ public class FireFly {
 	}	
 	
 	
-	/** Auflistung aller installierten Com Ports */
 	    static void listPorts()
 	    {
 	        java.util.Enumeration<CommPortIdentifier> portEnum = CommPortIdentifier.getPortIdentifiers();
