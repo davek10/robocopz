@@ -4,6 +4,7 @@ import gnu.io.CommPort;
 import gnu.io.CommPortIdentifier;
 import gnu.io.SerialPort;
 
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -18,6 +19,18 @@ public class FireFly {
 	public FireFly()
 	{
 		super();
+		
+		EventQueue.invokeLater(new Runnable() {
+			// Run method for the frame
+			public void run() {
+				try {
+					GUI frame = new GUI();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
 	}
 
 	void connect ( String portName ) throws Exception
@@ -41,7 +54,8 @@ public class FireFly {
 				out = serialPort.getOutputStream();
 
 				(new Thread(new SerialReader(in))).start();
-				(new Thread(new SerialWriter(out))).start();	                
+				(new Thread(new SerialWriter(out))).start();	    
+				toRobot((byte) 1);
 
 			}
 			else
@@ -52,6 +66,7 @@ public class FireFly {
 	}
 
 	static void toRobot(byte data){
+		System.out.println(data);
 		try{
 			out.write(data);
 		} catch (IOException e){
@@ -128,7 +143,6 @@ public class FireFly {
 	 */
 	public static void main(String[] args) {		
 		listPorts();
-
 
 		try
 		{

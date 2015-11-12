@@ -98,24 +98,6 @@ public class GUI extends JFrame {
 	// Char for storing pressed down button
 	char button;
 
-	public static void main(String[] args) {
-		//path.add(new DirChoice(true, false, true, 1));
-		//path.add(new DirChoice(true, false, true, 2));
-		//path.add(new DirChoice(true, false, true, 3));
-
-		// Code for enabling events when pressing buttons
-		EventQueue.invokeLater(new Runnable() {
-			// Run method for the frame
-			public void run() {
-				try {
-					GUI frame = new GUI();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
 
 	// Returns the bounds of a pane given start and end. 
 	public int[] getBound(int xStart,int yStart,int xEnd,int yEnd){
