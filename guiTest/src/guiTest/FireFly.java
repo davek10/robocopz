@@ -51,11 +51,11 @@ public class FireFly {
 		}     
 	}
 
-	static void toRobot(byte b1){
+	static void toRobot(byte data){
 		try{
-			out.write(b1);
+			out.write(data);
 		} catch (IOException e){
-			System.out.println("Unable to send bytes: " + b1);
+			System.out.println("Unable to send bytes: " + data);
 		}
 	}
 

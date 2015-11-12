@@ -70,7 +70,7 @@ public class GUI extends JFrame {
 	// Timer for counting time button is pressed
 	long startTime;
 	// Duration of button pressed
-	long duration;
+	double duration;
 	// Mapping integers to sensor positions
 	private static final Map<Integer, String> sensorMap;
 	static
@@ -91,10 +91,8 @@ public class GUI extends JFrame {
 	private JPanel panel = new JPanel();
 	//screen height - without border, height of title bar and header
 	int fullHeight = height-headHeight-2*border-titleHeight;
-
 	// width for 1 screen-snap-unit. 
 	int winWidth = (width-(xWindow+4)*border)/xWindow;
-
 	// Boolean for checking if a button is currently pressed down
 	boolean buttonPressed = false;
 	// Char for storing pressed down button
@@ -267,7 +265,7 @@ public class GUI extends JFrame {
 		// Iterate through last 14 keyboard input typed
 		for(int i = start; i < size; i++){
 			String element = kInput.get(i).getLeft();
-			int duration = kInput.get(i).getRight();
+			double duration = kInput.get(i).getRight();
 			inputText += element + "\t" + duration + "\n";
 		}	
 		inputs.setText(inputText);
@@ -301,7 +299,9 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(!buttonPressed){
 				// Tell robot to go forwards (until we tell it to stop)
+				byte send = 1;
 				System.out.println("forward");
+				FireFly.toRobot(send);
 				startTime = System.currentTimeMillis();
 				buttonPressed = true;
 				button = 'W';
@@ -312,7 +312,9 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(!buttonPressed){
 				// Tell robot to go backwards (until we tell it to stop)
+				byte send = 2;
 				System.out.println("backward");
+				FireFly.toRobot(send);
 				startTime = System.currentTimeMillis();
 				buttonPressed = true;
 				button = 'S';
@@ -323,7 +325,9 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(!buttonPressed){
 				// Tell robot to rotate left (until we tell it to stop)
+				byte send = 3;
 				System.out.println("rotate left");
+				FireFly.toRobot(send);
 				startTime = System.currentTimeMillis();
 				buttonPressed = true;
 				button = 'A';
@@ -334,7 +338,9 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(!buttonPressed){
 				// Tell robot to rotate right (until we tell it to stop)
+				byte send = 4;
 				System.out.println("rotate right");
+				FireFly.toRobot(send);
 				startTime = System.currentTimeMillis();
 				buttonPressed = true;
 				button = 'D';
@@ -346,9 +352,11 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(button == 'W'){
 				// Tell robot to stop
+				byte send = 5;
 				System.out.println("stop forward");
-				duration = (System.currentTimeMillis() - startTime);
-				kInput.add(new Pair("W" , (int) duration));
+				FireFly.toRobot(send);
+				duration = (System.currentTimeMillis() - startTime)/1000;
+				kInput.add(new Pair("W" , (double) (2*duration)));
 				updateInput();
 				buttonPressed = false;
 			}
@@ -358,9 +366,11 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(button == 'S'){
 				// Tell robot to stop
+				byte send = 5;
 				System.out.println("stop backward");
+				FireFly.toRobot(send);
 				duration = (System.currentTimeMillis() - startTime)/1000;
-				kInput.add(new Pair("S" , (int) duration));
+				kInput.add(new Pair("S" , (double) (2*duration)));
 				updateInput();
 				buttonPressed = false;
 			}
@@ -370,9 +380,11 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(button == 'A'){
 				// Tell robot to stop
+				byte send = 5;
 				System.out.println("stop left");
+				FireFly.toRobot(send);
 				duration = (System.currentTimeMillis() - startTime)/1000;
-				kInput.add(new Pair("A" , (int) duration));
+				kInput.add(new Pair("A" , (double) (2*duration)));
 				updateInput();
 				buttonPressed = false;
 			}
@@ -382,9 +394,11 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(button == 'D'){
 				// Tell robot to stop
+				byte send = 5;
 				System.out.println("stop right");
+				FireFly.toRobot(send);
 				duration = (System.currentTimeMillis() - startTime)/1000;
-				kInput.add(new Pair("D" , (int) duration));
+				kInput.add(new Pair("D" , (double) (2*duration)));
 				updateInput();
 				buttonPressed = false;
 			}

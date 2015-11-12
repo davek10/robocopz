@@ -3,15 +3,15 @@ package guiTest;
 public class Pair {
 
 	private final String left;
-	private final int right;
+	private final double right;
 
-	public Pair(String left, int right) {
+	public Pair(String left, double right) {
 		this.left = left;
 		this.right = right;
 	}
 
 	public String getLeft() { return left; }
-	public int getRight() { return right; }
+	public double getRight() { return right; }
 	
 	public String toString(){
 		return left + "\t" + right ;
