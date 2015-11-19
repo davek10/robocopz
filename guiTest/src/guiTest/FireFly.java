@@ -9,6 +9,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import gnu.io.SerialPortEvent;
+import gnu.io.SerialPortEventListener;
+ 
+
 public class FireFly {
 
 	/** Buffered input stream from the port */
@@ -24,13 +28,14 @@ public class FireFly {
 			// Run method for the frame
 			public void run() {
 				try {
-					GUI frame = new GUI();
+					DisplayTest frame = new DisplayTest();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		});
+		
 	}
 
 	void connect ( String portName ) throws Exception
@@ -49,14 +54,13 @@ public class FireFly {
 			{
 				SerialPort serialPort = (SerialPort) commPort;
 				serialPort.setSerialPortParams(115200,SerialPort.DATABITS_8,SerialPort.STOPBITS_1,SerialPort.PARITY_NONE);
-
 				in = serialPort.getInputStream();
 				out = serialPort.getOutputStream();
 
-				(new Thread(new SerialReader(in))).start();
+				//(new Thread(new SerialReader(in))).start();
+                serialPort.addEventListener(new SerialReader(in));
+                serialPort.notifyOnDataAvailable(true);
 				(new Thread(new SerialWriter(out))).start();	    
-				toRobot((byte) 1);
-
 			}
 			else
 			{
@@ -66,21 +70,66 @@ public class FireFly {
 	}
 
 	static void toRobot(byte data){
-		System.out.println(data);
 		try{
+			System.out.println("Sent: " + data);
 			out.write(data);
 		} catch (IOException e){
 			System.out.println("Unable to send bytes: " + data);
 		}
 	}
 
-	/**
-	 * Handles the input coming from the serial port.
-	 */
+
+	public static class SerialReader implements SerialPortEventListener 
+    {
+		
+        private InputStream in;
+        private byte[] buffer = new byte[25];
+        public SerialReader ( InputStream in )
+        {
+            this.in = in;
+        }
+        
+        public void serialEvent(SerialPortEvent arg0) {
+            int data;
+			System.out.println("Event");
+            try
+            {
+                int len = 0;
+                while ( ( data = in.read()) > -1 )
+                {
+                	
+                    //if ( data == '\n' ) {
+                    //    break;
+                    //}
+                    
+                    System.out.println("Data: " + data);
+                    buffer[len++] = (byte) data;
+                }
+                for (int i=0; i<25; i++) {
+                System.out.print(buffer[i] + " ");
+                }
+                GUI.update(buffer);
+                
+                //System.out.println("Buffer: " + new String(buffer,0,len));
+            }
+            catch ( IOException e )
+            {
+                e.printStackTrace();
+                System.exit(-1);
+            }             
+        }
+
+    }
+    
+	
+	
+/*	//Handles the input coming from the serial port.
+	 
 	public static class SerialReader implements Runnable 
 	{
 		private InputStream in;
 		private byte[] buffer = new byte[25];
+		
 
 		public SerialReader ( InputStream in )
 		{
@@ -90,15 +139,18 @@ public class FireFly {
 		public void run() {
 			int data;
 			int len = 0;
-
 			try
 			{
-				while ( ( data = in.read()) > -1 )
+				//while ( ( data = in.read()) > -1 )
+				while ( len < 25 )
 				{
+					data = in.read();
+					System.out.println("Read: " + data + ", len: " + len);
 					buffer[len++] = (byte) data;
 				}
-				System.out.print(new String(buffer,0,len));
+				System.out.println("Buffer: " + new String(buffer,0,len));
 				GUI.update(buffer);
+				System.out.println("done");
 			}
 			catch ( IOException e )
 			{
@@ -108,7 +160,8 @@ public class FireFly {
 		}
 
 	}
-
+*/
+	
 	public static class SerialWriter implements Runnable 
 	{
 		OutputStream out;
@@ -154,7 +207,7 @@ public class FireFly {
 		}
 
 	}	
-	// test
+
 
 	static void listPorts()
 	{
