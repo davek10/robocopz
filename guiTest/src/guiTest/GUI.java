@@ -270,6 +270,7 @@ public class GUI extends JFrame {
 		for(byte b: decisionsList){
 			decisionsText += b + "\n";
 		}
+		decisions.setText(decisionsText);
 
 	}
 

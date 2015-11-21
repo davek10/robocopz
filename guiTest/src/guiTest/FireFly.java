@@ -28,7 +28,7 @@ public class FireFly {
 			// Run method for the frame
 			public void run() {
 				try {
-					DisplayTest frame = new DisplayTest();
+					GUI frame = new GUI();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -102,12 +102,12 @@ public class FireFly {
                     //    break;
                     //}
                     
-                    System.out.println("Data: " + data);
                     buffer[len++] = (byte) data;
                 }
                 for (int i=0; i<25; i++) {
                 System.out.print(buffer[i] + " ");
                 }
+                System.out.println();
                 GUI.update(buffer);
                 
                 //System.out.println("Buffer: " + new String(buffer,0,len));
