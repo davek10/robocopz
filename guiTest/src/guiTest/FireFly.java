@@ -37,7 +37,9 @@ public class FireFly {
 		});
 		
 	}
-
+	/*
+	 * For connecting to the FireFly module, throws exception if connection failed. 
+	 */
 	void connect ( String portName ) throws Exception
 	{
 		CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
@@ -68,7 +70,9 @@ public class FireFly {
 			}
 		}     
 	}
-
+	/*
+	 * Used for sending data to the robot
+	 */
 	static void toRobot(byte data){
 		try{
 			System.out.println("Sent: " + data);
@@ -78,7 +82,9 @@ public class FireFly {
 		}
 	}
 
-
+	/*
+	 * Reads from the Bluetooth device using event listener
+	 */
 	public static class SerialReader implements SerialPortEventListener 
     {
 		
@@ -97,11 +103,6 @@ public class FireFly {
                 int len = 0;
                 while ( ( data = in.read()) > -1 )
                 {
-                	
-                    //if ( data == '\n' ) {
-                    //    break;
-                    //}
-                    
                     buffer[len++] = (byte) data;
                 }
                 for (int i=0; i<25; i++) {
@@ -109,8 +110,6 @@ public class FireFly {
                 }
                 System.out.println();
                 GUI.update(buffer);
-                
-                //System.out.println("Buffer: " + new String(buffer,0,len));
             }
             catch ( IOException e )
             {
@@ -120,48 +119,9 @@ public class FireFly {
         }
 
     }
-    
-	
-	
-/*	//Handles the input coming from the serial port.
-	 
-	public static class SerialReader implements Runnable 
-	{
-		private InputStream in;
-		private byte[] buffer = new byte[25];
-		
-
-		public SerialReader ( InputStream in )
-		{
-			this.in = in;
-		}
-
-		public void run() {
-			int data;
-			int len = 0;
-			try
-			{
-				//while ( ( data = in.read()) > -1 )
-				while ( len < 25 )
-				{
-					data = in.read();
-					System.out.println("Read: " + data + ", len: " + len);
-					buffer[len++] = (byte) data;
-				}
-				System.out.println("Buffer: " + new String(buffer,0,len));
-				GUI.update(buffer);
-				System.out.println("done");
-			}
-			catch ( IOException e )
-			{
-				e.printStackTrace();
-				System.exit(-1);
-			}             
-		}
-
-	}
-*/
-	
+	/*
+	 *  Writes to the robot via Bluetooth, using threads. 
+	 */
 	public static class SerialWriter implements Runnable 
 	{
 		OutputStream out;
@@ -189,13 +149,11 @@ public class FireFly {
 		}
 	}
 
-
-
-	/**
-	 * @param args
+	/*
+	 * Connects to the FireFly unit. 
 	 */
 	public static void main(String[] args) {		
-		listPorts();
+		//listPorts(); // Don't need to list the ports as of now
 
 		try
 		{
@@ -208,7 +166,9 @@ public class FireFly {
 
 	}	
 
-
+	/*
+	 *  Prints every port found.
+	 */
 	static void listPorts()
 	{
 		java.util.Enumeration<CommPortIdentifier> portEnum = CommPortIdentifier.getPortIdentifiers();
@@ -219,6 +179,9 @@ public class FireFly {
 		}        
 	}
 
+	/*
+	 *  Different types of ports, we only use serial. 
+	 */
 	static String getPortTypeName ( int portType )
 	{
 		switch ( portType )

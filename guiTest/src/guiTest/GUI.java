@@ -95,7 +95,7 @@ public class GUI extends JFrame {
 
 	}
 	// Button for mode
-	JButton mode = new JButton();
+	JButton modeButton = new JButton();
 	// Mode for the robot
 	Mode robotMode = Mode.AUTO;
 	// The windows panel
@@ -186,11 +186,11 @@ public class GUI extends JFrame {
 		panel.add(decisions);
 
 		Action action = new ModeAction();
-		mode.setAction(action);
+		modeButton.setAction(action);
 		bound = getBound(2, 2, 3, 3);
-		mode.setBounds(bound[0],bound[1],bound[2],bound[3]);
-		mode.setText(modeButtonText);
-		panel.add(mode);
+		modeButton.setBounds(bound[0],bound[1],bound[2],bound[3]);
+		modeButton.setText(modeButtonText);
+		panel.add(modeButton);
 
 		JPanel minimap = new JPanel();
 		bound = getBound(2, 3, 3, 5);
@@ -218,7 +218,6 @@ public class GUI extends JFrame {
 		panel.getInputMap().put(KeyStroke.getKeyStroke("released D"), "stop right");
 		panel.getActionMap().put("stop right", stopRight);
 
-		update(btData);
 	}
 
 	public static void update(byte[] FireFlyData){
@@ -281,14 +280,20 @@ public class GUI extends JFrame {
 	// Action for button mode
 	private class ModeAction extends AbstractAction {
 		int counter = 1;
+		byte mode = 0;
 		public void actionPerformed(ActionEvent e) {
 			counter*=-1;
+			// TODO add output when changing mode. 
 			if (counter>0){
-				robotMode = Mode.AUTO;
+				mode = 8;
+				FireFly.toRobot(mode);
+				robotMode = Mode.AUTO;				
 			}else{
+				mode = 9;
+				FireFly.toRobot(mode);
 				robotMode = Mode.CONTROL;
 			}
-			mode.setText(robotMode.toString());
+			modeButton.setText(robotMode.toString());
 		}
 	}
 
