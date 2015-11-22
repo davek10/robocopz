@@ -41,7 +41,7 @@ public class GUI extends JFrame {
 	// ArrayList used for the keyboard inputs
 	public static ArrayList<Pair> kInput = new ArrayList<Pair>();
 	// ArrayList for decisions made by the robot. TODO add special datatype for this.
-	public static ArrayList<Byte> decisionsList = new ArrayList<Byte>();
+	public static ArrayList<String> decisionsList = new ArrayList<String>();
 	// Text pane for the head
 	static JTextPane head = new JTextPane();
 	//Text pane for the servos data
@@ -263,12 +263,16 @@ public class GUI extends JFrame {
 	
 	static private void updateDecisions(byte data){
 		decisionsText = "Decisions \n";
-		// TODO, get string from data 
-		decisionsList.add(data);
-		
+		int dataI = data;
+		// If it is a valid key, representing the correct movement. 
+		if(decisionsMap.containsKey(dataI)){
+			decisionsList.add(decisionsMap.get(dataI));
+		}else{
+			decisionsList.add("Invalid: " + dataI);
+		}
 		// Iterate every decision in decisionsList
-		for(byte b: decisionsList){
-			decisionsText += b + "\n";
+		for(String s: decisionsList){
+			decisionsText += s + "\n";
 		}
 		decisions.setText(decisionsText);
 
