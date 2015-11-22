@@ -2,6 +2,8 @@ package guiTest;
 
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,6 +44,8 @@ public class GUI extends JFrame {
 	public static ArrayList<Pair> kInput = new ArrayList<Pair>();
 	// ArrayList for decisions made by the robot. TODO add special datatype for this.
 	public static ArrayList<String> decisionsList = new ArrayList<String>();
+	 // Mode for the robot
+	static Mode robotMode = Mode.AUTO;
 	// Text pane for the head
 	static JTextPane head = new JTextPane();
 	//Text pane for the servos data
@@ -52,18 +56,20 @@ public class GUI extends JFrame {
 	static JTextPane inputs = new JTextPane();
 	// Text pane for robot decisions
 	static JTextPane decisions = new JTextPane();
+	// Panel for minimap
+	JPanel minimap = new JPanel();
 	// String for the Servos pane
-	static String servoText;
+	static String servoText = "Servo \t Value \n";
 	// String for the inputs pane
-	static String inputText;
+	static String inputText = "Button \t Duration \n";
 	// String for the sensors pane
-	static String sensorText;
+	static String sensorText = "Sensor \t Value \n";
 	// String for the modeButton
-	static String modeButtonText;
+	static String modeButtonText = robotMode.toString();
 	// String for the head pane
-	static String headText;
+	static String headText = "\t\t ROBOKAPPA";
 	// String for the decisions pane
-	static String decisionsText;
+	static String decisionsText = "Decisions \n";
 	// Timer for counting time button is pressed
 	long startTime;
 	// Duration of button pressed
@@ -96,8 +102,6 @@ public class GUI extends JFrame {
 	}
 	// Button for mode
 	JButton modeButton = new JButton();
-	// Mode for the robot
-	Mode robotMode = Mode.AUTO;
 	// The windows panel
 	private JPanel panel = new JPanel();
 	//screen height - without border, height of title bar and header
@@ -125,26 +129,52 @@ public class GUI extends JFrame {
 
 		return bound;
 	}
+	public void updatePanel(){
+		width = panel.getWidth();
+		height = panel.getHeight();
+		fullHeight = height-headHeight-2*border-titleHeight;
+		winWidth = (width-(xWindow+4)*border)/xWindow;
+		head.setBounds(
+				border,
+				border,
+				width,
+				headHeight);
+		int[] bound;
+		bound = getBound(0, 0, 1, 4);
+		servos.setBounds(bound[0],bound[1],bound[2],bound[3]);
 
+		bound = getBound(1, 0, 2, 2);
+		inputs.setBounds(bound[0],bound[1],bound[2],bound[3]);
+
+		bound = getBound(2, 0, 3, 2);
+		sensors.setBounds(bound[0],bound[1],bound[2],bound[3]);
+
+		bound = getBound(1, 2, 2, 4);
+		decisions.setBounds(bound[0],bound[1],bound[2],bound[3]);
+
+		bound = getBound(2, 2, 3, 3);
+		modeButton.setBounds(bound[0],bound[1],bound[2],bound[3]);
+
+		bound = getBound(2, 3, 3, 5);
+		minimap.setBounds(bound[0], bound[1], bound[2], bound[3]);
+
+		
+	}
 
 	public GUI() {
-		for (int i = 0; i < 25; i++){
-			btData[i] = (byte) (i*5);
-		}
-		servoText = "Servo \t Value \n";
-		inputText = "Button \t Duration \n";
-		sensorText = "Sensor \t Value \n";
-		modeButtonText = robotMode.toString();
-		headText = "\t\t ROBOKAPPA";
-		decisionsText = "Decisions \n";
-
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(0, 0, width, height);
 
 		panel.setBorder(new EmptyBorder(border, border, border, border));
 		setContentPane(panel);
 		panel.setLayout(null);
-
+		panel.addComponentListener(new ComponentAdapter() {
+	        public void componentResized(ComponentEvent comp) {
+	        	updatePanel();
+	        }
+	      });
+		updatePanel();
+		
 		head.setFont(new Font("Arial", Font.PLAIN, 43));
 		head.setBounds(
 				border,
@@ -159,42 +189,27 @@ public class GUI extends JFrame {
 		StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
 		doc.setParagraphAttributes(0, doc.getLength(), center, false);
 
-
-		int[] bound;
-		bound = getBound(0, 0, 1, 4);
-		servos.setBounds(bound[0],bound[1],bound[2],bound[3]);
 		servos.setText(servoText);
 		servos.setEditable(false);
 		panel.add(servos);
 
-		bound = getBound(1, 0, 2, 2);
-		inputs.setBounds(bound[0],bound[1],bound[2],bound[3]);
 		inputs.setText(inputText);
 		inputs.setEditable(false);
 		panel.add(inputs);
 
-		bound = getBound(2, 0, 3, 2);
-		sensors.setBounds(bound[0],bound[1],bound[2],bound[3]);
 		sensors.setText(sensorText);
 		sensors.setEditable(false);
 		panel.add(sensors);
 
-		bound = getBound(1, 2, 2, 4);
-		decisions.setBounds(bound[0],bound[1],bound[2],bound[3]);
 		decisions.setText(decisionsText);
 		decisions.setEditable(false);
 		panel.add(decisions);
 
 		Action action = new ModeAction();
 		modeButton.setAction(action);
-		bound = getBound(2, 2, 3, 3);
-		modeButton.setBounds(bound[0],bound[1],bound[2],bound[3]);
 		modeButton.setText(modeButtonText);
 		panel.add(modeButton);
 
-		JPanel minimap = new JPanel();
-		bound = getBound(2, 3, 3, 5);
-		minimap.setBounds(bound[0], bound[1], bound[2], bound[3]);
 		panel.add(minimap);
 
 
@@ -286,11 +301,11 @@ public class GUI extends JFrame {
 			// TODO add output when changing mode. 
 			if (counter>0){
 				mode = 8;
-				FireFly.toRobot(mode);
+				//FireFly.toRobot(mode);
 				robotMode = Mode.AUTO;				
 			}else{
 				mode = 9;
-				FireFly.toRobot(mode);
+				//FireFly.toRobot(mode);
 				robotMode = Mode.CONTROL;
 			}
 			modeButton.setText(robotMode.toString());
