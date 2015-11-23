@@ -36,6 +36,8 @@ public class GUI extends JFrame {
 	int xWindow = 3;
 	//yWindow = total number of snap-points in y
 	int yWindow = 5;
+	// Global variable for testing update of GUI
+	int test = 0;
 	// ArrayList for path
 	public static ArrayList<DirChoice> path = new ArrayList<DirChoice>();
 	// Bluetooth data from the communications unit
@@ -222,6 +224,9 @@ public class GUI extends JFrame {
 		panel.getActionMap().put("backward", backward);
 		panel.getInputMap().put(KeyStroke.getKeyStroke("D"), "rotate right");
 		panel.getActionMap().put("rotate right", rotateRight);
+		
+		panel.getInputMap().put(KeyStroke.getKeyStroke("U"), "update");
+		panel.getActionMap().put("update", updateBT);
 
 		//Setting up keystrokes for releasing W,A,S,D
 		panel.getInputMap().put(KeyStroke.getKeyStroke("released W"), "releasedForward");
@@ -232,6 +237,11 @@ public class GUI extends JFrame {
 		panel.getActionMap().put("releasedBackward", releasedBackward);
 		panel.getInputMap().put(KeyStroke.getKeyStroke("released D"), "stop right");
 		panel.getActionMap().put("stop right", stopRight);
+		
+		for(int i = 0; i < 24; i++){
+			btData[i] = (byte)(i*2);
+		}
+		btData[24] = 1;
 
 	}
 
@@ -280,14 +290,20 @@ public class GUI extends JFrame {
 		int dataI = data;
 		// If it is a valid key, representing the correct movement. 
 		if(decisionsMap.containsKey(dataI)){
-			decisionsList.add(decisionsMap.get(dataI));
+			decisionsList.add(0,decisionsMap.get(dataI));
 		}else{
-			decisionsList.add("Invalid: " + dataI);
+			decisionsList.add(0, "Invalid: " + dataI);
 		}
+		int size = decisionsList.size();
+		if(size > 13){
+			size = 13;
+		}
+		// Iterate through last 14 keyboard input typed
+		for(int i = 0; i < size; i++){
+			String element = decisionsList.get(i);
+			decisionsText += element + "\n";
+		}	
 		// Iterate every decision in decisionsList
-		for(String s: decisionsList){
-			decisionsText += s + "\n";
-		}
 		decisions.setText(decisionsText);
 
 	}
@@ -311,6 +327,21 @@ public class GUI extends JFrame {
 			modeButton.setText(robotMode.toString());
 		}
 	}
+	
+	Action updateBT = new AbstractAction(){
+		public void actionPerformed(ActionEvent e){
+			for(int i = 0; i < 24; i++){
+				btData[i] = (byte)(test*3);
+			}
+			btData[24] = (byte)(test);
+			test++;
+			if(test > 9){
+				test = 0;
+			}
+			update(btData);
+			System.out.println("update");
+		}
+	};
 
 	// Action for every movement of the robot
 	Action forward = new AbstractAction(){
