@@ -4,6 +4,8 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -72,6 +74,8 @@ public class GUI extends JFrame {
 	static String headText = "\t\t ROBOKAPPA";
 	// String for the decisions pane
 	static String decisionsText = "Decisions \n";
+	// String for the log file button
+	static String fileActionText = "Print log";
 	// Timer for counting time button is pressed
 	long startTime;
 	// Duration of button pressed
@@ -104,6 +108,8 @@ public class GUI extends JFrame {
 	}
 	// Button for mode
 	JButton modeButton = new JButton();
+	// Button for printing file
+	JButton fileButton = new JButton();
 	// The windows panel
 	private JPanel panel = new JPanel();
 	//screen height - without border, height of title bar and header
@@ -156,6 +162,9 @@ public class GUI extends JFrame {
 
 		bound = getBound(2, 2, 3, 3);
 		modeButton.setBounds(bound[0],bound[1],bound[2],bound[3]);
+		
+		bound = getBound(2, 3, 3, 4);
+		fileButton.setBounds(bound[0],bound[1],bound[2],bound[3]);
 
 		bound = getBound(2, 3, 3, 5);
 		minimap.setBounds(bound[0], bound[1], bound[2], bound[3]);
@@ -207,10 +216,13 @@ public class GUI extends JFrame {
 		decisions.setEditable(false);
 		panel.add(decisions);
 
-		Action action = new ModeAction();
-		modeButton.setAction(action);
+		modeButton.setAction(ModeAction);
 		modeButton.setText(modeButtonText);
 		panel.add(modeButton);
+		
+		fileButton.setAction(fileAction);
+		fileButton.setText(fileActionText);
+		panel.add(fileButton);
 
 		panel.add(minimap);
 
@@ -270,6 +282,17 @@ public class GUI extends JFrame {
 		sensors.setText(sensorText);
 
 	}
+	String logOutput(){
+		String output = "Decisions: ";
+		for(String s: decisionsList){
+			output += (s + ",");
+		}
+		output += "\r\nInputs: ";
+		for(Pair e: kInput){
+			output += "(" + e.getLeft() + "," + e.getRight() + ") \n";
+		}
+		return output;
+	}
 	static private void updateInput(){
 		inputText = "Button \t Duration \n";
 		int size = kInput.size();
@@ -309,7 +332,7 @@ public class GUI extends JFrame {
 	}
 
 	// Action for button mode
-	private class ModeAction extends AbstractAction {
+	Action ModeAction = new AbstractAction() {
 		int counter = 1;
 		byte mode = 0;
 		public void actionPerformed(ActionEvent e) {
@@ -325,8 +348,24 @@ public class GUI extends JFrame {
 				robotMode = Mode.CONTROL;
 			}
 			modeButton.setText(robotMode.toString());
+			panel.grabFocus();
 		}
-	}
+	};
+	// Action for button mode
+		Action fileAction = new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				PrintWriter out;
+				try {
+					out = new PrintWriter("output.txt");
+					out.println(logOutput());
+					out.close();
+					System.out.println("Log printed");
+				} catch (FileNotFoundException e1) {
+					e1.printStackTrace();
+				}
+				panel.grabFocus();
+			}
+		};
 	
 	Action updateBT = new AbstractAction(){
 		public void actionPerformed(ActionEvent e){

@@ -74,12 +74,14 @@ public class FireFly {
 	 * Used for sending data to the robot
 	 */
 	static void toRobot(byte data){
+		/*
 		try{
 			System.out.println("Sent: " + data);
 			out.write(data);
 		} catch (IOException e){
 			System.out.println("Unable to send bytes: " + data);
 		}
+		*/
 	}
 
 	/*
