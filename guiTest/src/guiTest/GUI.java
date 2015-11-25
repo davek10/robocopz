@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +16,8 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 
@@ -60,6 +63,9 @@ public class GUI extends JFrame {
 	static JTextPane inputs = new JTextPane();
 	// Text pane for robot decisions
 	static JTextPane decisions = new JTextPane();
+	// Output for console
+	static JTextArea console = new JTextArea(50, 10);
+	static JScrollPane sp;
 	// Panel for minimap
 	JPanel minimap = new JPanel();
 	// String for the Servos pane
@@ -165,11 +171,12 @@ public class GUI extends JFrame {
 		
 		bound = getBound(2, 3, 3, 4);
 		fileButton.setBounds(bound[0],bound[1],bound[2],bound[3]);
-
+		/*
 		bound = getBound(2, 3, 3, 5);
 		minimap.setBounds(bound[0], bound[1], bound[2], bound[3]);
-
-		
+		*/
+		bound = getBound(0, 4, 1, 5);
+		sp.setBounds(bound[0],bound[1],bound[2],bound[3]);
 	}
 
 	public GUI() {
@@ -184,7 +191,13 @@ public class GUI extends JFrame {
 	        	updatePanel();
 	        }
 	      });
+		
+		sp = new JScrollPane(console);
 		updatePanel();
+		PrintStream printStream = new PrintStream(new CustomOutputStream(console));
+		System.setOut(printStream);
+		System.setErr(printStream);
+		panel.add(sp);
 		
 		head.setFont(new Font("Arial", Font.PLAIN, 43));
 		head.setBounds(
@@ -225,7 +238,6 @@ public class GUI extends JFrame {
 		panel.add(fileButton);
 
 		panel.add(minimap);
-
 
 		// Setting up keystrokes for W,A,S,D. Not finished currently
 		panel.getInputMap().put(KeyStroke.getKeyStroke("W"), "forward");
