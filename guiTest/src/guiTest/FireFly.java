@@ -98,7 +98,6 @@ public class FireFly {
         
         public void serialEvent(SerialPortEvent arg0) {
             int data;
-			System.out.println("Event");
             try
             {
                 int len = 0;

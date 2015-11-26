@@ -25,6 +25,11 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+/*
+ * data[0..5] = sensor info
+ * data[6..23] = servo info
+ * data[24] = mode 
+ */
 
 public class GUI extends JFrame {
 	// Height of title bar at the top of window
@@ -32,9 +37,9 @@ public class GUI extends JFrame {
 	// size of border
 	int border = 5;
 	// width of window
-	int width = 640;
+	int width = 1280;
 	// height of windows
-	int height = 480;
+	int height = 720;
 	// height of header
 	int headHeight = 50;
 	//xWindow = total number of snap-points in x
@@ -43,10 +48,14 @@ public class GUI extends JFrame {
 	int yWindow = 5;
 	// Global variable for testing update of GUI
 	int test = 0;
+	// Current robot mode, 8 = auto, 9 = control
+	byte mode = 8;
 	// ArrayList for path
 	public static ArrayList<DirChoice> path = new ArrayList<DirChoice>();
+	// Length of btData
+	public static int btDataLength = 25;
 	// Bluetooth data from the communications unit
-	public static byte[] btData = new byte[25];
+	public static byte[] btData = new byte[btDataLength];
 	// ArrayList used for the keyboard inputs
 	public static ArrayList<Pair> kInput = new ArrayList<Pair>();
 	// ArrayList for decisions made by the robot. TODO add special datatype for this.
@@ -86,6 +95,8 @@ public class GUI extends JFrame {
 	long startTime;
 	// Duration of button pressed
 	double duration;
+	// Byte for stopping
+	static byte stop = 7;
 	// Mapping integers to sensor positions
 	private static final Map<Integer, String> sensorMap;
 	static
@@ -110,6 +121,8 @@ public class GUI extends JFrame {
 		decisionsMap.put(5, "Turn Left");
 		decisionsMap.put(6, "Turn Right");
 		decisionsMap.put(7, "Stop");
+		decisionsMap.put(8, "Auto mode");
+		decisionsMap.put(9, "Control mode");
 
 	}
 	// Button for mode
@@ -261,11 +274,6 @@ public class GUI extends JFrame {
 		panel.getActionMap().put("releasedBackward", releasedBackward);
 		panel.getInputMap().put(KeyStroke.getKeyStroke("released D"), "stop right");
 		panel.getActionMap().put("stop right", stopRight);
-		
-		for(int i = 0; i < 24; i++){
-			btData[i] = (byte)(i*2);
-		}
-		btData[24] = 1;
 
 	}
 
@@ -279,8 +287,8 @@ public class GUI extends JFrame {
 	static private void updateServo(byte[] data){
 		servoText = "Servo \t Value \n";
 		// First 18 bits of the Bluetooth data, bit 0-17. Servo information
-		for (int j = 0; j < 18; j++){
-			servoText += (j + 1) + ": \t" + data[j] + "\n";
+		for (int j = 6; j < 24; j++){
+			servoText += (j - 6) + ": \t" + data[j] + "\n";
 		}		
 		servos.setText(servoText);
 
@@ -288,8 +296,8 @@ public class GUI extends JFrame {
 	static private void updateSensor(byte[] data){
 		sensorText = "Sensor \t Value \n";
 		// Bit 18-24 of Bluetooth data. Sensor information 
-		for( int l = 18; l < 24; l++){
-			sensorText += sensorMap.get(l-18) + ": \t" + data[l] + "\n";
+		for( int l = 0; l < 6; l++){
+			sensorText += sensorMap.get(l) + ": \t" + data[l] + "\n";
 		}
 		sensors.setText(sensorText);
 
@@ -346,11 +354,9 @@ public class GUI extends JFrame {
 	// Action for button mode
 	Action ModeAction = new AbstractAction() {
 		int counter = 1;
-		byte mode = 0;
 		public void actionPerformed(ActionEvent e) {
-			counter*=-1;
 			// TODO add output when changing mode. 
-			if (counter>0){
+			if (mode == 9){
 				mode = 8;
 				//FireFly.toRobot(mode);
 				robotMode = Mode.AUTO;				
@@ -359,6 +365,7 @@ public class GUI extends JFrame {
 				//FireFly.toRobot(mode);
 				robotMode = Mode.CONTROL;
 			}
+			FireFly.toRobot(mode);
 			modeButton.setText(robotMode.toString());
 			panel.grabFocus();
 		}
@@ -448,8 +455,8 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(button == 'W'){
 				// Tell robot to stop
-				byte send = 5;
-				FireFly.toRobot(send);
+				byte send = stop;
+				FireFly.toRobot(stop);
 				duration = (double)(System.currentTimeMillis() - startTime)/1000;
 				kInput.add(0, new Pair("W" , (double) (2*duration)));
 				updateInput();
@@ -461,8 +468,8 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(button == 'S'){
 				// Tell robot to stop
-				byte send = 5;
-				FireFly.toRobot(send);
+				byte send = stop;
+				FireFly.toRobot(stop);
 				duration = (double)(System.currentTimeMillis() - startTime)/1000;
 				kInput.add(0, new Pair("S" , (double) (2*duration)));
 				updateInput();
@@ -474,8 +481,8 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(button == 'A'){
 				// Tell robot to stop
-				byte send = 5;
-				FireFly.toRobot(send);
+				byte send = stop;
+				FireFly.toRobot(stop);
 				duration = (double)(System.currentTimeMillis() - startTime)/1000;
 				kInput.add(0, new Pair("A" , (double) (2*duration)));
 				updateInput();
@@ -487,8 +494,8 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(button == 'D'){
 				// Tell robot to stop
-				byte send = 5;
-				FireFly.toRobot(send);
+				byte send = stop;
+				FireFly.toRobot(stop);
 				duration = (double)(System.currentTimeMillis() - startTime)/1000;
 				kInput.add(0, new Pair("D" , (double) (2*duration)));
 				updateInput();
