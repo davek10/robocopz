@@ -46,10 +46,6 @@ public class GUI extends JFrame {
 	int xWindow = 3;
 	//yWindow = total number of snap-points in y
 	int yWindow = 5;
-	// Global variable for testing update of GUI
-	int test = 0;
-	// Current robot mode, 8 = auto, 9 = control
-	byte mode = 8;
 	// ArrayList for path
 	public static ArrayList<DirChoice> path = new ArrayList<DirChoice>();
 	// Length of btData
@@ -252,30 +248,41 @@ public class GUI extends JFrame {
 
 		panel.add(minimap);
 
-		// Setting up keystrokes for W,A,S,D. Not finished currently
+		// Setting up keystrokes for W,A,S,D,Q,E. Not finished currently
 		panel.getInputMap().put(KeyStroke.getKeyStroke("W"), "forward");
 		panel.getActionMap().put("forward", forward);
-		panel.getInputMap().put(KeyStroke.getKeyStroke("A"), "rotate left");
-		panel.getActionMap().put("rotate left", rotateLeft);
-		panel.getInputMap().put(KeyStroke.getKeyStroke("S"), "backward");
-		panel.getActionMap().put("backward", backward);
-		panel.getInputMap().put(KeyStroke.getKeyStroke("D"), "rotate right");
-		panel.getActionMap().put("rotate right", rotateRight);
-		
-		panel.getInputMap().put(KeyStroke.getKeyStroke("U"), "update");
-		panel.getActionMap().put("update", updateBT);
-
-		//Setting up keystrokes for releasing W,A,S,D
 		panel.getInputMap().put(KeyStroke.getKeyStroke("released W"), "releasedForward");
 		panel.getActionMap().put("releasedForward", releasedForward);
+		
+		panel.getInputMap().put(KeyStroke.getKeyStroke("A"), "rotate left");
+		panel.getActionMap().put("rotate left", rotateLeft);
 		panel.getInputMap().put(KeyStroke.getKeyStroke("released A"), "stop left");
 		panel.getActionMap().put("stop left", stopLeft);
+		
+		panel.getInputMap().put(KeyStroke.getKeyStroke("S"), "backward");
+		panel.getActionMap().put("backward", backward);
 		panel.getInputMap().put(KeyStroke.getKeyStroke("released S"), "releasedBackward");
 		panel.getActionMap().put("releasedBackward", releasedBackward);
+		
+		panel.getInputMap().put(KeyStroke.getKeyStroke("D"), "rotate right");
+		panel.getActionMap().put("rotate right", rotateRight);
 		panel.getInputMap().put(KeyStroke.getKeyStroke("released D"), "stop right");
 		panel.getActionMap().put("stop right", stopRight);
-
+		
+		panel.getInputMap().put(KeyStroke.getKeyStroke("Q"), "walk left");
+		panel.getActionMap().put("walk left", walkLeft);
+		panel.getInputMap().put(KeyStroke.getKeyStroke("released Q"), "stop wleft");
+		panel.getActionMap().put("stop wleft", stopWLeft);
+		
+		panel.getInputMap().put(KeyStroke.getKeyStroke("E"), "walk right");
+		panel.getActionMap().put("walk right", walkRight);
+		panel.getInputMap().put(KeyStroke.getKeyStroke("released E"), "stop wright");
+		panel.getActionMap().put("stop wright", stopWRight);
+		
 	}
+	public static int unsignedToBytes(byte b) {
+	    return b & 0xFF;
+	  }
 
 	public static void update(byte[] FireFlyData){
 		btData = FireFlyData;
@@ -288,7 +295,7 @@ public class GUI extends JFrame {
 		servoText = "Servo \t Value \n";
 		// First 18 bits of the Bluetooth data, bit 0-17. Servo information
 		for (int j = 6; j < 24; j++){
-			servoText += (j - 6) + ": \t" + data[j] + "\n";
+			servoText += (j - 6) + ": \t" + unsignedToBytes(data[j]) + "\n";
 		}		
 		servos.setText(servoText);
 
@@ -297,7 +304,7 @@ public class GUI extends JFrame {
 		sensorText = "Sensor \t Value \n";
 		// Bit 18-24 of Bluetooth data. Sensor information 
 		for( int l = 0; l < 6; l++){
-			sensorText += sensorMap.get(l) + ": \t" + data[l] + "\n";
+			sensorText += sensorMap.get(l) + ": \t" + unsignedToBytes(data[l]) + "\n";
 		}
 		sensors.setText(sensorText);
 
@@ -356,17 +363,15 @@ public class GUI extends JFrame {
 		int counter = 1;
 		public void actionPerformed(ActionEvent e) {
 			// TODO add output when changing mode. 
-			if (mode == 9){
-				mode = 8;
+			if (robotMode == Mode.CONTROL){
 				//FireFly.toRobot(mode);
 				robotMode = Mode.AUTO;				
 			}else{
-				mode = 9;
 				//FireFly.toRobot(mode);
 				robotMode = Mode.CONTROL;
 			}
-			FireFly.toRobot(mode);
-			modeButton.setText(robotMode.toString());
+			FireFly.toRobot(robotMode.getInt());
+			modeButton.setText(robotMode.getString() );
 			panel.grabFocus();
 		}
 	};
@@ -385,21 +390,6 @@ public class GUI extends JFrame {
 				panel.grabFocus();
 			}
 		};
-	
-	Action updateBT = new AbstractAction(){
-		public void actionPerformed(ActionEvent e){
-			for(int i = 0; i < 24; i++){
-				btData[i] = (byte)(test*3);
-			}
-			btData[24] = (byte)(test);
-			test++;
-			if(test > 9){
-				test = 0;
-			}
-			update(btData);
-			System.out.println("update");
-		}
-	};
 
 	// Action for every movement of the robot
 	Action forward = new AbstractAction(){
@@ -447,6 +437,30 @@ public class GUI extends JFrame {
 				startTime = System.currentTimeMillis();
 				buttonPressed = true;
 				button = 'D';
+			}
+		}
+	};
+	Action walkLeft = new AbstractAction(){
+		public void actionPerformed(ActionEvent e){
+			if(!buttonPressed){
+				// Tell robot to go forwards (until we tell it to stop)
+				byte send = 5;
+				FireFly.toRobot(send);
+				startTime = System.currentTimeMillis();
+				buttonPressed = true;
+				button = 'Q';
+			}
+		}
+	};
+	Action walkRight = new AbstractAction(){
+		public void actionPerformed(ActionEvent e){
+			if(!buttonPressed){
+				// Tell robot to go forwards (until we tell it to stop)
+				byte send = 6;
+				FireFly.toRobot(send);
+				startTime = System.currentTimeMillis();
+				buttonPressed = true;
+				button = 'E';
 			}
 		}
 	};
@@ -503,4 +517,30 @@ public class GUI extends JFrame {
 			}
 		}
 	};	
+	Action stopWLeft = new AbstractAction(){
+		public void actionPerformed(ActionEvent e){
+			if(button == 'Q'){
+				// Tell robot to stop
+				byte send = stop;
+				FireFly.toRobot(stop);
+				duration = (double)(System.currentTimeMillis() - startTime)/1000;
+				kInput.add(0, new Pair("Q" , (double) (2*duration)));
+				updateInput();
+				buttonPressed = false;
+			}
+		}
+	};
+	Action stopWRight = new AbstractAction(){
+		public void actionPerformed(ActionEvent e){
+			if(button == 'E'){
+				// Tell robot to stop
+				byte send = stop;
+				FireFly.toRobot(stop);
+				duration = (double)(System.currentTimeMillis() - startTime)/1000;
+				kInput.add(0, new Pair("E" , (double) (2*duration)));
+				updateInput();
+				buttonPressed = false;
+			}
+		}
+	};
 }
