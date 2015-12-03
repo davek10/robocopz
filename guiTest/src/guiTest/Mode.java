@@ -2,8 +2,8 @@ package guiTest;
 
 
 public enum Mode {
-	CONTROL((byte) 9, "Control"),
-	AUTO((byte) 8, "Auto");
+	CONTROL((byte) 9, "CONTROL"),
+	AUTO((byte) 8, "AUTO");
 	private byte mode;
 	private String modeName;
 

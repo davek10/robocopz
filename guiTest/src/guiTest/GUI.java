@@ -4,17 +4,24 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -55,19 +62,28 @@ public class GUI extends JFrame {
 	// ArrayList used for the keyboard inputs
 	public static ArrayList<Pair> kInput = new ArrayList<Pair>();
 	// ArrayList for decisions made by the robot. TODO add special datatype for this.
-	public static ArrayList<String> decisionsList = new ArrayList<String>();
-	 // Mode for the robot
-	static Mode robotMode = Mode.AUTO;
+	public static ArrayList<Pair> decisionsList = new ArrayList<Pair>();
+	// Arraylist for actions made when pressing keyboard buttons q,w,e,a,s,d
+	public static ArrayList<Action> actionList = new ArrayList<Action>();
+
+	// Strings for building the path string of images
+	private static final String IMG_PATH = "src/img/";
+	private static String controlIMG = "control";
+	private static String autoIMG = "auto";
+	private static final String IMG_END = ".png";
+	// Mode for the robot
+	static Mode robotMode = Mode.CONTROL ;
 	// Text pane for the head
 	static JTextPane head = new JTextPane();
 	//Text pane for the servos data
 	static JTextPane servos = new JTextPane();
-	//Text pane for the sensors data
+	//Text pane for the sensors data 
 	static JTextPane sensors = new JTextPane();
 	//Text pane for the keyboard inputs
 	static JTextPane inputs = new JTextPane();
 	// Text pane for robot decisions
 	static JTextPane decisions = new JTextPane();
+	static JLabel kButtons;
 	// Output for console
 	static JTextArea console = new JTextArea(50, 10);
 	static JScrollPane sp;
@@ -121,7 +137,7 @@ public class GUI extends JFrame {
 		decisionsMap.put(9, "Control mode");
 
 	}
-	// Button for mode
+	static // Button for mode
 	JButton modeButton = new JButton();
 	// Button for printing file
 	JButton fileButton = new JButton();
@@ -134,7 +150,7 @@ public class GUI extends JFrame {
 	// Boolean for checking if a button is currently pressed down
 	boolean buttonPressed = false;
 	// Char for storing pressed down button
-	char button;
+	String button = "";
 
 
 	// Returns the bounds of a pane given start and end. 
@@ -177,15 +193,37 @@ public class GUI extends JFrame {
 
 		bound = getBound(2, 2, 3, 3);
 		modeButton.setBounds(bound[0],bound[1],bound[2],bound[3]);
-		
+
 		bound = getBound(2, 3, 3, 4);
 		fileButton.setBounds(bound[0],bound[1],bound[2],bound[3]);
 		/*
 		bound = getBound(2, 3, 3, 5);
 		minimap.setBounds(bound[0], bound[1], bound[2], bound[3]);
-		*/
+		 */
 		bound = getBound(0, 4, 1, 5);
 		sp.setBounds(bound[0],bound[1],bound[2],bound[3]);
+
+		bound = getBound(1, 4, 2, 5);
+		kButtons.setBounds(bound[0],bound[1],bound[2],bound[3]);
+	}
+
+	void setImage(){
+		try {
+			BufferedImage img = ImageIO.read(new File(IMG_PATH + controlIMG + IMG_END));
+			ImageIcon icon = new ImageIcon(img);
+			kButtons = new JLabel(icon);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	static void UpdateImage(String IMG){
+		try {
+			BufferedImage img = ImageIO.read(new File(IMG_PATH + IMG + IMG_END));
+			ImageIcon icon = new ImageIcon(img);
+			kButtons.setIcon(icon);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public GUI() {
@@ -196,18 +234,18 @@ public class GUI extends JFrame {
 		setContentPane(panel);
 		panel.setLayout(null);
 		panel.addComponentListener(new ComponentAdapter() {
-	        public void componentResized(ComponentEvent comp) {
-	        	updatePanel();
-	        }
-	      });
-		
+			public void componentResized(ComponentEvent comp) {
+				updatePanel();
+			}
+		});
 		sp = new JScrollPane(console);
+		setImage();
 		updatePanel();
 		PrintStream printStream = new PrintStream(new CustomOutputStream(console));
 		System.setOut(printStream);
 		System.setErr(printStream);
 		panel.add(sp);
-		
+
 		head.setFont(new Font("Arial", Font.PLAIN, 43));
 		head.setBounds(
 				border,
@@ -238,51 +276,67 @@ public class GUI extends JFrame {
 		decisions.setEditable(false);
 		panel.add(decisions);
 
-		modeButton.setAction(ModeAction);
+		modeButton.setEnabled(false);
+		//modeButton.setAction(ModeAction);
 		modeButton.setText(modeButtonText);
 		panel.add(modeButton);
-		
+
 		fileButton.setAction(fileAction);
 		fileButton.setText(fileActionText);
 		panel.add(fileButton);
 
+		panel.add(kButtons);
+
 		panel.add(minimap);
+		actionList.add(forward);
+		actionList.add(releasedForward);
+		actionList.add(rotateLeft);
+		actionList.add(stopLeft);
+		actionList.add(backward);
+		actionList.add(releasedBackward);
+		actionList.add(rotateRight);
+		actionList.add(stopRight);
+		actionList.add(walkLeft);
+		actionList.add(stopWLeft);
+		actionList.add(walkRight);
+		actionList.add(stopWRight);
 
 		// Setting up keystrokes for W,A,S,D,Q,E. Not finished currently
 		panel.getInputMap().put(KeyStroke.getKeyStroke("W"), "forward");
 		panel.getActionMap().put("forward", forward);
 		panel.getInputMap().put(KeyStroke.getKeyStroke("released W"), "releasedForward");
 		panel.getActionMap().put("releasedForward", releasedForward);
-		
+
 		panel.getInputMap().put(KeyStroke.getKeyStroke("A"), "rotate left");
 		panel.getActionMap().put("rotate left", rotateLeft);
 		panel.getInputMap().put(KeyStroke.getKeyStroke("released A"), "stop left");
 		panel.getActionMap().put("stop left", stopLeft);
-		
+
 		panel.getInputMap().put(KeyStroke.getKeyStroke("S"), "backward");
 		panel.getActionMap().put("backward", backward);
 		panel.getInputMap().put(KeyStroke.getKeyStroke("released S"), "releasedBackward");
 		panel.getActionMap().put("releasedBackward", releasedBackward);
-		
+
 		panel.getInputMap().put(KeyStroke.getKeyStroke("D"), "rotate right");
 		panel.getActionMap().put("rotate right", rotateRight);
 		panel.getInputMap().put(KeyStroke.getKeyStroke("released D"), "stop right");
 		panel.getActionMap().put("stop right", stopRight);
-		
+
 		panel.getInputMap().put(KeyStroke.getKeyStroke("Q"), "walk left");
 		panel.getActionMap().put("walk left", walkLeft);
 		panel.getInputMap().put(KeyStroke.getKeyStroke("released Q"), "stop wleft");
 		panel.getActionMap().put("stop wleft", stopWLeft);
-		
+
 		panel.getInputMap().put(KeyStroke.getKeyStroke("E"), "walk right");
 		panel.getActionMap().put("walk right", walkRight);
 		panel.getInputMap().put(KeyStroke.getKeyStroke("released E"), "stop wright");
 		panel.getActionMap().put("stop wright", stopWRight);
-		
+
+
 	}
 	public static int unsignedToBytes(byte b) {
-	    return b & 0xFF;
-	  }
+		return b & 0xFF;
+	}
 
 	public static void update(byte[] FireFlyData){
 		btData = FireFlyData;
@@ -291,6 +345,17 @@ public class GUI extends JFrame {
 		updateInput();
 		updateDecisions(btData[24]);
 	}
+	static void disableActions(){
+		for(Action a: actionList){
+			a.setEnabled(false);
+		}
+	}
+	static void enableActions(){
+		for(Action a: actionList){
+			a.setEnabled(true);
+		}
+	}
+
 	static private void updateServo(byte[] data){
 		servoText = "Servo \t Value \n";
 		// First 18 bits of the Bluetooth data, bit 0-17. Servo information
@@ -311,12 +376,12 @@ public class GUI extends JFrame {
 	}
 	String logOutput(){
 		String output = "Decisions: ";
-		for(String s: decisionsList){
-			output += (s + ",");
+		for(Pair s: decisionsList){
+			output += (s.getLeft() + "(" + (int) (s.getRight()) + "), \n");
 		}
 		output += "\r\nInputs: ";
 		for(Pair e: kInput){
-			output += "(" + e.getLeft() + "," + e.getRight() + ") \n";
+			output += "(" + e.getLeft() + "," + e.getRight() + "), \n";
 		}
 		return output;
 	}
@@ -334,15 +399,25 @@ public class GUI extends JFrame {
 		}	
 		inputs.setText(inputText);
 	}
-	
+
 	static private void updateDecisions(byte data){
 		decisionsText = "Decisions \n";
 		int dataI = data;
+		String decision;
+		if(data == 8 || data == 9){
+			updateMode(data);
+		}
 		// If it is a valid key, representing the correct movement. 
 		if(decisionsMap.containsKey(dataI)){
-			decisionsList.add(0,decisionsMap.get(dataI));
+			decision = decisionsMap.get(dataI);
 		}else{
-			decisionsList.add(0, "Invalid: " + dataI);
+			decision = "Invalid: " + dataI;
+		}
+		if(decisionsList.size() > 0 && (decisionsList.get(0).getLeft().equals(decision))){
+			double temp = decisionsList.get(0).getRight();
+			decisionsList.set(0, new Pair(decision, temp + 1));
+		}else{
+			decisionsList.add(0, new Pair(decision, 1));
 		}
 		int size = decisionsList.size();
 		if(size > 13){
@@ -350,24 +425,35 @@ public class GUI extends JFrame {
 		}
 		// Iterate through last 14 keyboard input typed
 		for(int i = 0; i < size; i++){
-			String element = decisionsList.get(i);
-			decisionsText += element + "\n";
+			String element = decisionsList.get(i).getLeft();
+			double times = decisionsList.get(i).getRight();
+			decisionsText += element + " (" + (int)(times) + ")" + "\n";
 		}	
 		// Iterate every decision in decisionsList
 		decisions.setText(decisionsText);
 
 	}
 
+	static void updateMode(byte data){
+		if(data == 8){
+			robotMode = Mode.AUTO;
+			UpdateImage(autoIMG);
+			disableActions();
+		}else{
+			robotMode = Mode.CONTROL;
+			UpdateImage(controlIMG);
+			enableActions();
+		}
+		modeButton.setText(robotMode.getString());
+	}
+
 	// Action for button mode
 	Action ModeAction = new AbstractAction() {
 		int counter = 1;
 		public void actionPerformed(ActionEvent e) {
-			// TODO add output when changing mode. 
 			if (robotMode == Mode.CONTROL){
-				//FireFly.toRobot(mode);
 				robotMode = Mode.AUTO;				
 			}else{
-				//FireFly.toRobot(mode);
 				robotMode = Mode.CONTROL;
 			}
 			FireFly.toRobot(robotMode.getInt());
@@ -376,20 +462,20 @@ public class GUI extends JFrame {
 		}
 	};
 	// Action for button mode
-		Action fileAction = new AbstractAction() {
-			public void actionPerformed(ActionEvent e) {
-				PrintWriter out;
-				try {
-					out = new PrintWriter("output.txt");
-					out.println(logOutput());
-					out.close();
-					System.out.println("Log printed");
-				} catch (FileNotFoundException e1) {
-					e1.printStackTrace();
-				}
-				panel.grabFocus();
+	Action fileAction = new AbstractAction() {
+		public void actionPerformed(ActionEvent e) {
+			PrintWriter out;
+			try {
+				out = new PrintWriter("output.txt");
+				out.println(logOutput());
+				out.close();
+				System.out.println("Log printed");
+			} catch (FileNotFoundException e1) {
+				e1.printStackTrace();
 			}
-		};
+			panel.grabFocus();
+		}
+	};
 
 	// Action for every movement of the robot
 	Action forward = new AbstractAction(){
@@ -400,7 +486,8 @@ public class GUI extends JFrame {
 				FireFly.toRobot(send);
 				startTime = System.currentTimeMillis();
 				buttonPressed = true;
-				button = 'W';
+				button = "W";
+				UpdateImage(button);
 			}
 		}
 	};
@@ -412,7 +499,8 @@ public class GUI extends JFrame {
 				FireFly.toRobot(send);
 				startTime = System.currentTimeMillis();
 				buttonPressed = true;
-				button = 'S';
+				button = "S";
+				UpdateImage(button);
 			}
 		}
 	};
@@ -424,7 +512,8 @@ public class GUI extends JFrame {
 				FireFly.toRobot(send);
 				startTime = System.currentTimeMillis();
 				buttonPressed = true;
-				button = 'A';
+				button = "A";
+				UpdateImage(button);
 			}
 		}
 	};
@@ -436,7 +525,8 @@ public class GUI extends JFrame {
 				FireFly.toRobot(send);
 				startTime = System.currentTimeMillis();
 				buttonPressed = true;
-				button = 'D';
+				button = "D";
+				UpdateImage(button);
 			}
 		}
 	};
@@ -448,7 +538,8 @@ public class GUI extends JFrame {
 				FireFly.toRobot(send);
 				startTime = System.currentTimeMillis();
 				buttonPressed = true;
-				button = 'Q';
+				button = "Q";
+				UpdateImage(button);
 			}
 		}
 	};
@@ -460,86 +551,93 @@ public class GUI extends JFrame {
 				FireFly.toRobot(send);
 				startTime = System.currentTimeMillis();
 				buttonPressed = true;
-				button = 'E';
+				button = "E";
+				UpdateImage(button);
 			}
 		}
 	};
 	// Action for stopping the robot
 	Action releasedForward = new AbstractAction(){
 		public void actionPerformed(ActionEvent e){
-			if(button == 'W'){
+			if(button.equals("W")){
 				// Tell robot to stop
 				byte send = stop;
-				FireFly.toRobot(stop);
+				FireFly.toRobot(send);
 				duration = (double)(System.currentTimeMillis() - startTime)/1000;
-				kInput.add(0, new Pair("W" , (double) (2*duration)));
+				kInput.add(0, new Pair(button, (double) (2*duration)));
 				updateInput();
 				buttonPressed = false;
+				UpdateImage(controlIMG);
 			}
 		}
 	};
 	Action releasedBackward = new AbstractAction(){
 		public void actionPerformed(ActionEvent e){
-			if(button == 'S'){
+			if(button.equals("S")){
 				// Tell robot to stop
 				byte send = stop;
-				FireFly.toRobot(stop);
+				FireFly.toRobot(send);
 				duration = (double)(System.currentTimeMillis() - startTime)/1000;
-				kInput.add(0, new Pair("S" , (double) (2*duration)));
+				kInput.add(0, new Pair(button , (double) (2*duration)));
 				updateInput();
 				buttonPressed = false;
+				UpdateImage(controlIMG);
 			}
 		}
 	};
 	Action stopLeft = new AbstractAction(){
 		public void actionPerformed(ActionEvent e){
-			if(button == 'A'){
+			if(button.equals("A")){
 				// Tell robot to stop
 				byte send = stop;
-				FireFly.toRobot(stop);
+				FireFly.toRobot(send);
 				duration = (double)(System.currentTimeMillis() - startTime)/1000;
-				kInput.add(0, new Pair("A" , (double) (2*duration)));
+				kInput.add(0, new Pair(button, (double) (2*duration)));
 				updateInput();
 				buttonPressed = false;
+				UpdateImage(controlIMG);
 			}
 		}
 	};
 	Action stopRight = new AbstractAction(){
 		public void actionPerformed(ActionEvent e){
-			if(button == 'D'){
+			if(button.equals("D")){
 				// Tell robot to stop
 				byte send = stop;
-				FireFly.toRobot(stop);
+				FireFly.toRobot(send);
 				duration = (double)(System.currentTimeMillis() - startTime)/1000;
-				kInput.add(0, new Pair("D" , (double) (2*duration)));
+				kInput.add(0, new Pair(button, (double) (2*duration)));
 				updateInput();
 				buttonPressed = false;
+				UpdateImage(controlIMG);
 			}
 		}
 	};	
 	Action stopWLeft = new AbstractAction(){
 		public void actionPerformed(ActionEvent e){
-			if(button == 'Q'){
+			if(button.equals("Q")){
 				// Tell robot to stop
 				byte send = stop;
-				FireFly.toRobot(stop);
+				FireFly.toRobot(send);
 				duration = (double)(System.currentTimeMillis() - startTime)/1000;
-				kInput.add(0, new Pair("Q" , (double) (2*duration)));
+				kInput.add(0, new Pair(button , (double) (2*duration)));
 				updateInput();
 				buttonPressed = false;
+				UpdateImage(controlIMG);
 			}
 		}
 	};
 	Action stopWRight = new AbstractAction(){
 		public void actionPerformed(ActionEvent e){
-			if(button == 'E'){
+			if(button.equals("E")){
 				// Tell robot to stop
 				byte send = stop;
-				FireFly.toRobot(stop);
+				FireFly.toRobot(send);
 				duration = (double)(System.currentTimeMillis() - startTime)/1000;
-				kInput.add(0, new Pair("E" , (double) (2*duration)));
+				kInput.add(0, new Pair(button, (double) (2*duration)));
 				updateInput();
 				buttonPressed = false;
+				UpdateImage(controlIMG);
 			}
 		}
 	};

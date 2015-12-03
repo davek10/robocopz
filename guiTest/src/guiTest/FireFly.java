@@ -19,6 +19,8 @@ public class FireFly {
 	static private InputStream in;
 	/** Output stream to the port */
 	static private OutputStream out;
+	/** If we want to print Input/Output set this to true*/
+	static private boolean printIO = false;
 
 	public FireFly()
 	{
@@ -75,7 +77,9 @@ public class FireFly {
 	 */
 	static void toRobot(byte data){
 		try{
-			System.out.println("Sent: " + data);
+			if(printIO){
+				System.out.println("Sent: " + data);
+			}
 			out.write(data);
 		} catch (IOException e){
 			System.out.println("Unable to send bytes: " + data);
@@ -105,10 +109,12 @@ public class FireFly {
                 {
                     buffer[len++] = (byte) data;
                 }
-                for (int i=0; i<25; i++) {
-                System.out.print(buffer[i] + " ");
+                if(printIO){
+                	for (int i=0; i<25; i++) {
+                		System.out.print(buffer[i] + " ");
+                	}
+                	System.out.println();
                 }
-                System.out.println();
                 GUI.update(buffer);
             }
             catch ( IOException e )
