@@ -73,13 +73,16 @@ public class FireFly {
 		}     
 	}
 	/*
-	 * Used for sending data to the robot
+	 * Used for sending instruction data to the robot
 	 */
-	static void toRobot(byte data){
+	static void instrToRobot(int data){
 		try{
 			if(printIO){
 				System.out.println("Sent: " + data);
 			}
+			// Send first info of how many bytes we are sending
+			out.write(1);
+			// Then send the data (1 byte)
 			out.write(data);
 		} catch (IOException e){
 			System.out.println("Unable to send bytes: " + data);
@@ -94,7 +97,7 @@ public class FireFly {
     {
 		
         private InputStream in;
-        private byte[] buffer = new byte[25];
+        private int[] buffer = new int[25];
         public SerialReader ( InputStream in )
         {
             this.in = in;
@@ -105,12 +108,20 @@ public class FireFly {
             try
             {
                 int len = 0;
-                while ( ( data = in.read()) > -1 )
-                {
-                    buffer[len++] = (byte) data;
-                }
+                /*
+                data = in.read();
+                int[] buffer = new int[data];
+                buffer[len++] = data;
+                if(data > -1){
+                */
+                	while ( ( data = in.read()) > -1 )
+                    {
+                        buffer[len++] = data;
+                    }	
+                //}
+                
                 if(printIO){
-                	for (int i=0; i<25; i++) {
+                	for (int i=0; i < buffer.length; i++) {
                 		System.out.print(buffer[i] + " ");
                 	}
                 	System.out.println();

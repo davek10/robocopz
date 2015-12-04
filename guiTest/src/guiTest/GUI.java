@@ -60,7 +60,7 @@ public class GUI extends JFrame {
 	// Length of btData
 	public static int btDataLength = 25;
 	// Bluetooth data from the communications unit
-	public static byte[] btData = new byte[btDataLength];
+	public static int[] btData;
 	// ArrayList used for the keyboard inputs
 	public static ArrayList<Pair> kInput = new ArrayList<Pair>();
 	// ArrayList for decisions made by the robot. TODO add special datatype for this.
@@ -123,7 +123,7 @@ public class GUI extends JFrame {
 	double duration;
 	
 	// Byte for stopping
-	static byte stop = 7;
+	static int stop = 7;
 	
 	// Mapping integers to sensor positions
 	private static final Map<Integer, String> sensorMap;
@@ -340,12 +340,11 @@ public class GUI extends JFrame {
 		return b & 0xFF;
 	}
 
-	public static void update(byte[] FireFlyData){
-		btData = FireFlyData;
-		updateServo(btData);
-		updateSensor(btData);
+	public static void update(int[] buffer){
+		updateServo(buffer);
+		updateSensor(buffer);
 		updateInput();
-		updateDecisions(btData[24]);
+		updateDecisions(buffer[buffer.length - 1]);
 	}
 	static void disableActions(){
 		for(Action a: actionList){
@@ -358,20 +357,20 @@ public class GUI extends JFrame {
 		}
 	}
 
-	static private void updateServo(byte[] data){
+	static private void updateServo(int[] buffer){
 		servoText = "Servo \t Value \n";
 		// First 18 bits of the Bluetooth data, bit 0-17. Servo information
 		for (int j = 6; j < 24; j++){
-			servoText += (j - 6) + ": \t" + unsignedToBytes(data[j]) + "\n";
+			servoText += (j - 6) + ": \t" + buffer[j] + "\n";
 		}		
 		servos.setText(servoText);
 
 	}
-	static private void updateSensor(byte[] data){
+	static private void updateSensor(int[] buffer){
 		sensorText = "Sensor \t Value \n";
 		// Bit 18-24 of Bluetooth data. Sensor information 
 		for( int l = 0; l < 6; l++){
-			sensorText += sensorMap.get(l) + ": \t" + unsignedToBytes(data[l]) + "\n";
+			sensorText += sensorMap.get(l) + ": \t" + buffer[l] + "\n";
 		}
 		sensors.setText(sensorText);
 
@@ -402,12 +401,12 @@ public class GUI extends JFrame {
 		inputs.setText(inputText);
 	}
 
-	static private void updateDecisions(byte data){
+	static private void updateDecisions(int buffer){
 		decisionsText = "Decisions \n";
-		int dataI = data;
+		int dataI = buffer;
 		String decision;
-		if(data == 8 || data == 9){
-			updateMode(data);
+		if(buffer == 8 || buffer == 9){
+			updateMode(buffer);
 		}
 		// If it is a valid key, representing the correct movement. 
 		if(decisionsMap.containsKey(dataI)){
@@ -436,8 +435,8 @@ public class GUI extends JFrame {
 
 	}
 
-	static void updateMode(byte data){
-		if(data == 8){
+	static void updateMode(int buffer){
+		if(buffer == 8){
 			robotMode = Mode.AUTO;
 			UpdateImage(autoIMG);
 			disableActions();
@@ -457,7 +456,7 @@ public class GUI extends JFrame {
 			}else{
 				robotMode = Mode.CONTROL;
 			}
-			FireFly.toRobot(robotMode.getInt());
+			FireFly.instrToRobot(robotMode.getInt());
 			modeButton.setText(robotMode.getString() );
 			panel.grabFocus();
 		}
@@ -483,8 +482,8 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(!buttonPressed){
 				// Tell robot to go forwards (until we tell it to stop)
-				byte send = 1;
-				FireFly.toRobot(send);
+				int send = 1;
+				FireFly.instrToRobot(send);
 				startTime = System.currentTimeMillis();
 				buttonPressed = true;
 				button = "W";
@@ -496,8 +495,8 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(!buttonPressed){
 				// Tell robot to go backwards (until we tell it to stop)
-				byte send = 2;
-				FireFly.toRobot(send);
+				int send = 2;
+				FireFly.instrToRobot(send);
 				startTime = System.currentTimeMillis();
 				buttonPressed = true;
 				button = "S";
@@ -509,8 +508,8 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(!buttonPressed){
 				// Tell robot to rotate left (until we tell it to stop)
-				byte send = 3;
-				FireFly.toRobot(send);
+				int send = 3;
+				FireFly.instrToRobot(send);
 				startTime = System.currentTimeMillis();
 				buttonPressed = true;
 				button = "A";
@@ -522,8 +521,8 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(!buttonPressed){
 				// Tell robot to rotate right (until we tell it to stop)
-				byte send = 4;
-				FireFly.toRobot(send);
+				int send = 4;
+				FireFly.instrToRobot(send);
 				startTime = System.currentTimeMillis();
 				buttonPressed = true;
 				button = "D";
@@ -535,8 +534,8 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(!buttonPressed){
 				// Tell robot to go forwards (until we tell it to stop)
-				byte send = 5;
-				FireFly.toRobot(send);
+				int send = 5;
+				FireFly.instrToRobot(send);
 				startTime = System.currentTimeMillis();
 				buttonPressed = true;
 				button = "Q";
@@ -548,8 +547,8 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(!buttonPressed){
 				// Tell robot to go forwards (until we tell it to stop)
-				byte send = 6;
-				FireFly.toRobot(send);
+				int send = 6;
+				FireFly.instrToRobot(send);
 				startTime = System.currentTimeMillis();
 				buttonPressed = true;
 				button = "E";
@@ -562,8 +561,8 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(button.equals("W")){
 				// Tell robot to stop
-				byte send = stop;
-				FireFly.toRobot(send);
+				int send = stop;
+				FireFly.instrToRobot(send);
 				duration = (double)(System.currentTimeMillis() - startTime)/1000;
 				kInput.add(0, new Pair(button, (double) (2*duration)));
 				updateInput();
@@ -576,8 +575,8 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(button.equals("S")){
 				// Tell robot to stop
-				byte send = stop;
-				FireFly.toRobot(send);
+				int send = stop;
+				FireFly.instrToRobot(send);
 				duration = (double)(System.currentTimeMillis() - startTime)/1000;
 				kInput.add(0, new Pair(button , (double) (2*duration)));
 				updateInput();
@@ -590,8 +589,8 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(button.equals("A")){
 				// Tell robot to stop
-				byte send = stop;
-				FireFly.toRobot(send);
+				int send = stop;
+				FireFly.instrToRobot(send);
 				duration = (double)(System.currentTimeMillis() - startTime)/1000;
 				kInput.add(0, new Pair(button, (double) (2*duration)));
 				updateInput();
@@ -604,8 +603,8 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(button.equals("D")){
 				// Tell robot to stop
-				byte send = stop;
-				FireFly.toRobot(send);
+				int send = stop;
+				FireFly.instrToRobot(send);
 				duration = (double)(System.currentTimeMillis() - startTime)/1000;
 				kInput.add(0, new Pair(button, (double) (2*duration)));
 				updateInput();
@@ -618,8 +617,8 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(button.equals("Q")){
 				// Tell robot to stop
-				byte send = stop;
-				FireFly.toRobot(send);
+				int send = stop;
+				FireFly.instrToRobot(send);
 				duration = (double)(System.currentTimeMillis() - startTime)/1000;
 				kInput.add(0, new Pair(button , (double) (2*duration)));
 				updateInput();
@@ -632,8 +631,8 @@ public class GUI extends JFrame {
 		public void actionPerformed(ActionEvent e){
 			if(button.equals("E")){
 				// Tell robot to stop
-				byte send = stop;
-				FireFly.toRobot(send);
+				int send = stop;
+				FireFly.instrToRobot(send);
 				duration = (double)(System.currentTimeMillis() - startTime)/1000;
 				kInput.add(0, new Pair(button, (double) (2*duration)));
 				updateInput();

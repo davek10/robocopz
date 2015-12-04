@@ -106,7 +106,7 @@ public class DisplayTest extends JFrame {
 		      /** Handle the key pressed event from the text field. */
 		      public void keyPressed(KeyEvent e) {
 		    	  int keyCode = e.getKeyCode() % 255;
-		    	  FireFly.toRobot((byte) keyCode);
+		    	  FireFly.instrToRobot((byte) keyCode);
 		    	  inputList.add(KeyEvent.getKeyText(keyCode));
 		          System.out.println("key code = " + keyCode + " (" + KeyEvent.getKeyText(keyCode) + ")");
 		          updateServo();
