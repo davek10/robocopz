@@ -19,6 +19,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -53,6 +54,7 @@ public class GUI extends JFrame {
 	int xWindow = 3;
 	//yWindow = total number of snap-points in y
 	int yWindow = 5;
+	
 	// ArrayList for path
 	public static ArrayList<DirChoice> path = new ArrayList<DirChoice>();
 	// Length of btData
@@ -71,8 +73,16 @@ public class GUI extends JFrame {
 	private static String controlIMG = "control";
 	private static String autoIMG = "auto";
 	private static final String IMG_END = ".png";
+	
 	// Mode for the robot
 	static Mode robotMode = Mode.CONTROL ;
+	
+	// Button for mode
+	static JButton modeButton = new JButton();
+	// Button for printing file
+	JButton fileButton = new JButton();
+	// The windows panel
+	private JPanel panel = new JPanel();
 	// Text pane for the head
 	static JTextPane head = new JTextPane();
 	//Text pane for the servos data
@@ -83,12 +93,15 @@ public class GUI extends JFrame {
 	static JTextPane inputs = new JTextPane();
 	// Text pane for robot decisions
 	static JTextPane decisions = new JTextPane();
-	static JLabel kButtons;
+	// Label containing images for pressed down buttons
+	static JLabel kButtons = new JLabel();
 	// Output for console
 	static JTextArea console = new JTextArea(50, 10);
-	static JScrollPane sp;
+	// ScrollPane containing console
+	static JScrollPane sp = new JScrollPane(console);
 	// Panel for minimap
 	JPanel minimap = new JPanel();
+	
 	// String for the Servos pane
 	static String servoText = "Servo \t Value \n";
 	// String for the inputs pane
@@ -103,12 +116,15 @@ public class GUI extends JFrame {
 	static String decisionsText = "Decisions \n";
 	// String for the log file button
 	static String fileActionText = "Print log";
+	
 	// Timer for counting time button is pressed
 	long startTime;
 	// Duration of button pressed
 	double duration;
+	
 	// Byte for stopping
 	static byte stop = 7;
+	
 	// Mapping integers to sensor positions
 	private static final Map<Integer, String> sensorMap;
 	static
@@ -121,6 +137,8 @@ public class GUI extends JFrame {
 		sensorMap.put(4, "Back Left");
 		sensorMap.put(5, "Front Left");
 	}
+	
+	// Mapping decision bytes to corresponding strings
 	private static final Map<Integer, String> decisionsMap;
 	static
 	{
@@ -136,13 +154,8 @@ public class GUI extends JFrame {
 		decisionsMap.put(8, "Auto mode");
 		decisionsMap.put(9, "Control mode");
 
-	}
-	static // Button for mode
-	JButton modeButton = new JButton();
-	// Button for printing file
-	JButton fileButton = new JButton();
-	// The windows panel
-	private JPanel panel = new JPanel();
+	}	
+	
 	//screen height - without border, height of title bar and header
 	int fullHeight = height-headHeight-2*border-titleHeight;
 	// width for 1 screen-snap-unit. 
@@ -168,16 +181,13 @@ public class GUI extends JFrame {
 
 		return bound;
 	}
+	// Updates bounds for every panel and
 	public void updatePanel(){
 		width = panel.getWidth();
 		height = panel.getHeight();
 		fullHeight = height-headHeight-2*border-titleHeight;
 		winWidth = (width-(xWindow+4)*border)/xWindow;
-		head.setBounds(
-				border,
-				border,
-				width,
-				headHeight);
+		head.setBounds(border,border,width,headHeight);
 		int[] bound;
 		bound = getBound(0, 0, 1, 4);
 		servos.setBounds(bound[0],bound[1],bound[2],bound[3]);
@@ -207,15 +217,7 @@ public class GUI extends JFrame {
 		kButtons.setBounds(bound[0],bound[1],bound[2],bound[3]);
 	}
 
-	void setImage(){
-		try {
-			BufferedImage img = ImageIO.read(new File(IMG_PATH + controlIMG + IMG_END));
-			ImageIcon icon = new ImageIcon(img);
-			kButtons = new JLabel(icon);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+	// Updates the image in JLabel kButtons with image name given by IMG
 	static void UpdateImage(String IMG){
 		try {
 			BufferedImage img = ImageIO.read(new File(IMG_PATH + IMG + IMG_END));
@@ -225,11 +227,8 @@ public class GUI extends JFrame {
 			e.printStackTrace();
 		}
 	}
-
-	public GUI() {
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(0, 0, width, height);
-
+	// Initializes all JComponents
+	void init(){
 		panel.setBorder(new EmptyBorder(border, border, border, border));
 		setContentPane(panel);
 		panel.setLayout(null);
@@ -238,20 +237,18 @@ public class GUI extends JFrame {
 				updatePanel();
 			}
 		});
-		sp = new JScrollPane(console);
-		setImage();
+		
+		UpdateImage(controlIMG);
 		updatePanel();
+		
+		// Sets output of the console to sp
 		PrintStream printStream = new PrintStream(new CustomOutputStream(console));
 		System.setOut(printStream);
 		System.setErr(printStream);
 		panel.add(sp);
 
 		head.setFont(new Font("Arial", Font.PLAIN, 43));
-		head.setBounds(
-				border,
-				border,
-				width,
-				headHeight);
+		head.setBounds(border,border,width,headHeight);
 		head.setText(headText);
 		panel.add(head);
 		// Center text in header
@@ -259,7 +256,7 @@ public class GUI extends JFrame {
 		SimpleAttributeSet center = new SimpleAttributeSet();
 		StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
 		doc.setParagraphAttributes(0, doc.getLength(), center, false);
-
+		
 		servos.setText(servoText);
 		servos.setEditable(false);
 		panel.add(servos);
@@ -276,8 +273,7 @@ public class GUI extends JFrame {
 		decisions.setEditable(false);
 		panel.add(decisions);
 
-		modeButton.setEnabled(false);
-		//modeButton.setAction(ModeAction);
+		modeButton.setAction(ModeAction);
 		modeButton.setText(modeButtonText);
 		panel.add(modeButton);
 
@@ -286,8 +282,14 @@ public class GUI extends JFrame {
 		panel.add(fileButton);
 
 		panel.add(kButtons);
-
 		panel.add(minimap);
+	}
+
+	public GUI() {
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(0, 0, width, height);
+		init();
+		
 		actionList.add(forward);
 		actionList.add(releasedForward);
 		actionList.add(rotateLeft);
@@ -449,7 +451,6 @@ public class GUI extends JFrame {
 
 	// Action for button mode
 	Action ModeAction = new AbstractAction() {
-		int counter = 1;
 		public void actionPerformed(ActionEvent e) {
 			if (robotMode == Mode.CONTROL){
 				robotMode = Mode.AUTO;				
