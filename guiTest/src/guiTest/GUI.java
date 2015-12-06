@@ -5,14 +5,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -79,6 +82,8 @@ public class GUI extends JFrame {
 	
 	// Button for mode
 	static JButton modeButton = new JButton();
+	// Button for submitting a file with control decisions to robot
+	static JButton submitButton = new JButton();
 	// Button for printing file
 	JButton fileButton = new JButton();
 	// The windows panel
@@ -110,6 +115,8 @@ public class GUI extends JFrame {
 	static String sensorText = "Sensor \t Value \n";
 	// String for the modeButton
 	static String modeButtonText = robotMode.toString();
+	// String for the submitButton
+	static String submitButtonText = "Submit";
 	// String for the head pane
 	static String headText = "\t\t ROBOKAPPA";
 	// String for the decisions pane
@@ -181,7 +188,7 @@ public class GUI extends JFrame {
 
 		return bound;
 	}
-	// Updates bounds for every panel and
+	// Updates bounds for the panel and every JComponent
 	public void updatePanel(){
 		width = panel.getWidth();
 		height = panel.getHeight();
@@ -215,6 +222,9 @@ public class GUI extends JFrame {
 
 		bound = getBound(1, 4, 2, 5);
 		kButtons.setBounds(bound[0],bound[1],bound[2],bound[3]);
+		
+		bound = getBound(2, 4, 3, 5);
+		submitButton.setBounds(bound[0],bound[1],bound[2],bound[3]);
 	}
 
 	// Updates the image in JLabel kButtons with image name given by IMG
@@ -232,13 +242,15 @@ public class GUI extends JFrame {
 		panel.setBorder(new EmptyBorder(border, border, border, border));
 		setContentPane(panel);
 		panel.setLayout(null);
+		// Every time the window is resized, call updatePanel
 		panel.addComponentListener(new ComponentAdapter() {
 			public void componentResized(ComponentEvent comp) {
 				updatePanel();
 			}
 		});
-		
+		// Set the image to the 'neutral' one
 		UpdateImage(controlIMG);
+		// Set all the bounds for the JComponents
 		updatePanel();
 		
 		// Sets output of the console to sp
@@ -280,16 +292,22 @@ public class GUI extends JFrame {
 		fileButton.setAction(fileAction);
 		fileButton.setText(fileActionText);
 		panel.add(fileButton);
-
+		
+		submitButton.setAction(submitAction);
+		submitButton.setText(submitButtonText);
+		panel.add(submitButton);
+		
 		panel.add(kButtons);
 		panel.add(minimap);
 	}
 
 	public GUI() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		// Setting bounds for panel
 		setBounds(0, 0, width, height);
+		// Initiate values for textAreas and other JComponents
 		init();
-		
+		// Add every keyboard press and release action to a list
 		actionList.add(forward);
 		actionList.add(releasedForward);
 		actionList.add(rotateLeft);
@@ -303,7 +321,7 @@ public class GUI extends JFrame {
 		actionList.add(walkRight);
 		actionList.add(stopWRight);
 
-		// Setting up keystrokes for W,A,S,D,Q,E. Not finished currently
+		// Setting up keystrokes for W,A,S,D,Q,E. Pressing and releasing
 		panel.getInputMap().put(KeyStroke.getKeyStroke("W"), "forward");
 		panel.getActionMap().put("forward", forward);
 		panel.getInputMap().put(KeyStroke.getKeyStroke("released W"), "releasedForward");
@@ -336,27 +354,30 @@ public class GUI extends JFrame {
 
 
 	}
-	public static int unsignedToBytes(byte b) {
+	// Turn a byte into unsigned Integer
+	public static int byteToUnsigned(byte b) {
 		return b & 0xFF;
 	}
-
+	// Update textareas from information in int[] buffer
 	public static void update(int[] buffer){
 		updateServo(buffer);
 		updateSensor(buffer);
 		updateInput();
 		updateDecisions(buffer[buffer.length - 1]);
 	}
+	// Disable actions for keyboard presses q,w,e,a,s,d
 	static void disableActions(){
 		for(Action a: actionList){
 			a.setEnabled(false);
 		}
 	}
+	// Enable actions for keyboard presses q,w,e,a,s,d
 	static void enableActions(){
 		for(Action a: actionList){
 			a.setEnabled(true);
 		}
 	}
-
+	// Update servo values from int[] buffer
 	static private void updateServo(int[] buffer){
 		servoText = "Servo \t Value \n";
 		// First 18 bits of the Bluetooth data, bit 0-17. Servo information
@@ -366,6 +387,7 @@ public class GUI extends JFrame {
 		servos.setText(servoText);
 
 	}
+	// Update sensor values from int[] buffer
 	static private void updateSensor(int[] buffer){
 		sensorText = "Sensor \t Value \n";
 		// Bit 18-24 of Bluetooth data. Sensor information 
@@ -375,6 +397,7 @@ public class GUI extends JFrame {
 		sensors.setText(sensorText);
 
 	}
+	// Used for printing information to the log
 	String logOutput(){
 		String output = "Decisions: ";
 		for(Pair s: decisionsList){
@@ -386,6 +409,7 @@ public class GUI extends JFrame {
 		}
 		return output;
 	}
+	// Update the list of inputs
 	static private void updateInput(){
 		inputText = "Button \t Duration \n";
 		int size = kInput.size();
@@ -400,7 +424,7 @@ public class GUI extends JFrame {
 		}	
 		inputs.setText(inputText);
 	}
-
+	// Update the decisions text from information in buffer
 	static private void updateDecisions(int buffer){
 		decisionsText = "Decisions \n";
 		int dataI = buffer;
@@ -434,7 +458,7 @@ public class GUI extends JFrame {
 		decisions.setText(decisionsText);
 
 	}
-
+	// Update mode given Integer buffer
 	static void updateMode(int buffer){
 		if(buffer == 8){
 			robotMode = Mode.AUTO;
@@ -457,7 +481,8 @@ public class GUI extends JFrame {
 				robotMode = Mode.CONTROL;
 			}
 			FireFly.instrToRobot(robotMode.getInt());
-			modeButton.setText(robotMode.getString() );
+			modeButton.setText(robotMode.getString());
+			// Return focus to the panel so we can still press buttons on the keyboard
 			panel.grabFocus();
 		}
 	};
@@ -476,17 +501,51 @@ public class GUI extends JFrame {
 			panel.grabFocus();
 		}
 	};
+	// Action for submitButton
+		Action submitAction = new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				// What the file is named, and in which directory
+				String fileName = "src/txt/vars.txt";
+				// The arraylist we save the integers we have read from the file
+				ArrayList<Integer> readList = new ArrayList<Integer>();
+				try{
+					File file = new File(fileName);
+					Scanner sc = new Scanner(file);
+					// While there is a line to read
+					while (sc.hasNextLine()) {
+						// Read one line
+						String line = sc.nextLine();
+						// Split the line into several parts with delimiter given from line.split
+						String[] tokens = line.split("= ");
+						// Take the token in the second part of the list, when using format example 'var = 7'
+						readList.add(Integer.parseInt(tokens[1]));
+					}
+					sc.close();
+				} catch (Exception ex){
+					ex.printStackTrace();
+				}
+				// Send the arraylist of Integers to the robot
+				 FireFly.paramsToRobot(readList);
+				 // Return focus to the panel so we can still press buttons on the keyboard
+				 panel.grabFocus();
+			}
+		};
 
 	// Action for every movement of the robot
 	Action forward = new AbstractAction(){
 		public void actionPerformed(ActionEvent e){
+			// Only perform this when a button is not already pressed down
 			if(!buttonPressed){
 				// Tell robot to go forwards (until we tell it to stop)
 				int send = 1;
+				// Send instruction send to robot
 				FireFly.instrToRobot(send);
+				// Start the counter of how long we have held the button down
 				startTime = System.currentTimeMillis();
 				buttonPressed = true;
+				// Set the button pressed down
 				button = "W";
+				// Update the image displaying currently held down button
 				UpdateImage(button);
 			}
 		}
@@ -559,14 +618,21 @@ public class GUI extends JFrame {
 	// Action for stopping the robot
 	Action releasedForward = new AbstractAction(){
 		public void actionPerformed(ActionEvent e){
+			// If the button is the one we held down first
 			if(button.equals("W")){
 				// Tell robot to stop
 				int send = stop;
+				// Send stop instruction to robot
 				FireFly.instrToRobot(send);
+				// Calculate passed time in seconds
 				duration = (double)(System.currentTimeMillis() - startTime)/1000;
+				// Add the held down button and the time to kInput. duration is half the time for some reason
 				kInput.add(0, new Pair(button, (double) (2*duration)));
+				// Update JTextArea containing pressed down buttons
 				updateInput();
+				// Release the first button held down
 				buttonPressed = false;
+				// Update image to the one in the 'neutral' state
 				UpdateImage(controlIMG);
 			}
 		}

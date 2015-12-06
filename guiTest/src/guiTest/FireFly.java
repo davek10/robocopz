@@ -8,6 +8,7 @@ import java.awt.EventQueue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 
 import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
@@ -89,6 +90,25 @@ public class FireFly {
 		}
 	
 	}
+	/*
+	 * Used for sending control params to the robot
+	 */
+	public static void paramsToRobot(ArrayList<Integer> readList) {
+		try{
+			// Send first info of how many bytes we are sending
+			out.write(readList.size());
+			// Then send the data 
+			for(Integer i : readList){
+				out.write(i);
+			}
+		} catch (IOException e){
+			System.out.print("Unable to send bytes: ");
+			for(Integer i : readList){
+				System.out.print("," + i );
+			}
+		}
+	}
+
 
 	/*
 	 * Reads from the Bluetooth device using event listener
@@ -218,7 +238,7 @@ public class FireFly {
 		}
 
 	}
-
+	
 }
 
 
