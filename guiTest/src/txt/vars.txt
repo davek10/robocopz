@@ -1,0 +1,5 @@
+width = 80
+sideUpper = 140
+frontUpper = 140
+allowedangle = 5
+speed = 50
