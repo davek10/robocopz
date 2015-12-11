@@ -17,5 +17,4 @@ public enum Mode {
 	String getString(){
 		return modeName;
 	}
-
 }

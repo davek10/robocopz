@@ -101,13 +101,17 @@ public class FireFly {
 			out.write(readList.size());
 			// Then send the data 
 			for(Integer i : readList){
+				System.out.print(i);
 				out.write(i);
 			}
+			System.out.println();
 		} catch (IOException e){
 			System.out.print("Unable to send bytes: ");
 			for(Integer i : readList){
 				System.out.print("," + i );
 			}
+		} catch (NullPointerException e){
+			System.out.println("Robot not connected");
 		}
 	}
 
@@ -196,6 +200,7 @@ public class FireFly {
 		}
 		catch ( Exception e )
 		{
+			System.out.println("Cannot connect to robot");
 			e.printStackTrace();
 		}
 

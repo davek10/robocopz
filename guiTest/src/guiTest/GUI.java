@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -360,8 +361,8 @@ public class GUI extends JFrame {
 	}
 	// Update textareas from information in int[] buffer
 	public static void update(int[] buffer){
-		updateServo(buffer);
-		updateSensor(buffer);
+		updateSensor(Arrays.copyOfRange(buffer, 0, 5));
+		updateServo(Arrays.copyOfRange(buffer, 6, 23));
 		updateInput();
 		updateDecisions(buffer[buffer.length - 2]);
 		updateMode(buffer[buffer.length - 1]);
@@ -382,8 +383,8 @@ public class GUI extends JFrame {
 	static private void updateServo(int[] buffer){
 		servoText = "Servo \t Value \n";
 		// First 18 bits of the Bluetooth data, bit 0-17. Servo information
-		for (int j = 6; j < 24; j++){
-			servoText += (j - 6) + ": \t" + buffer[j] + "\n";
+		for (int j = 0; j < buffer.length; j++){
+			servoText += (j) + ": \t" + buffer[j] + "\n";
 		}		
 		servos.setText(servoText);
 
@@ -392,7 +393,7 @@ public class GUI extends JFrame {
 	static private void updateSensor(int[] buffer){
 		sensorText = "Sensor \t Value \n";
 		// Bit 18-24 of Bluetooth data. Sensor information 
-		for( int l = 0; l < 6; l++){
+		for( int l = 0; l < buffer.length; l++){
 			sensorText += sensorMap.get(l) + ": \t" + buffer[l] + "\n";
 		}
 		sensors.setText(sensorText);
@@ -479,6 +480,7 @@ public class GUI extends JFrame {
 			}
 			FireFly.instrToRobot(robotMode.getInt());
 			modeButton.setText(robotMode.getString());
+			System.out.println("Switched mode: " + robotMode.getString());
 			// Return focus to the panel so we can still press buttons on the keyboard
 			panel.grabFocus();
 		}
@@ -514,8 +516,14 @@ public class GUI extends JFrame {
 						String line = sc.nextLine();
 						// Split the line into several parts with delimiter given from line.split
 						String[] tokens = line.split("= ");
+						int output = 0;
+						try{
+							output = Integer.parseInt(tokens[1]);
+							readList.add(output);
+						}catch(ArrayIndexOutOfBoundsException exception) {
+							System.out.println("Error in vars file, check for empty lines");
+						}
 						// Take the token in the second part of the list, when using format example 'var = 7'
-						readList.add(Integer.parseInt(tokens[1]));
 					}
 					sc.close();
 				} catch (Exception ex){
