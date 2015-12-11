@@ -87,6 +87,8 @@ public class FireFly {
 			out.write(data);
 		} catch (IOException e){
 			System.out.println("Unable to send bytes: " + data);
+		} catch (NullPointerException e){
+			System.out.println("Robot not connected");
 		}
 	
 	}
@@ -117,7 +119,6 @@ public class FireFly {
     {
 		
         private InputStream in;
-        private int[] buffer = new int[25];
         public SerialReader ( InputStream in )
         {
             this.in = in;
@@ -128,17 +129,14 @@ public class FireFly {
             try
             {
                 int len = 0;
-                /*
                 data = in.read();
                 int[] buffer = new int[data];
-                buffer[len++] = data;
                 if(data > -1){
-                */
                 	while ( ( data = in.read()) > -1 )
                     {
                         buffer[len++] = data;
                     }	
-                //}
+                }
                 
                 if(printIO){
                 	for (int i=0; i < buffer.length; i++) {

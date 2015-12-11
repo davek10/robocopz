@@ -363,7 +363,8 @@ public class GUI extends JFrame {
 		updateServo(buffer);
 		updateSensor(buffer);
 		updateInput();
-		updateDecisions(buffer[buffer.length - 1]);
+		updateDecisions(buffer[buffer.length - 2]);
+		updateMode(buffer[buffer.length - 1]);
 	}
 	// Disable actions for keyboard presses q,w,e,a,s,d
 	static void disableActions(){
@@ -427,16 +428,12 @@ public class GUI extends JFrame {
 	// Update the decisions text from information in buffer
 	static private void updateDecisions(int buffer){
 		decisionsText = "Decisions \n";
-		int dataI = buffer;
 		String decision;
-		if(buffer == 8 || buffer == 9){
-			updateMode(buffer);
-		}
 		// If it is a valid key, representing the correct movement. 
-		if(decisionsMap.containsKey(dataI)){
-			decision = decisionsMap.get(dataI);
+		if(decisionsMap.containsKey(buffer)){
+			decision = decisionsMap.get(buffer);
 		}else{
-			decision = "Invalid: " + dataI;
+			decision = "Invalid: " + buffer;
 		}
 		if(decisionsList.size() > 0 && (decisionsList.get(0).getLeft().equals(decision))){
 			double temp = decisionsList.get(0).getRight();
@@ -460,7 +457,7 @@ public class GUI extends JFrame {
 	}
 	// Update mode given Integer buffer
 	static void updateMode(int buffer){
-		if(buffer == 8){
+		if(buffer == 1){
 			robotMode = Mode.AUTO;
 			UpdateImage(autoIMG);
 			disableActions();
