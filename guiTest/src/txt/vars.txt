@@ -1,8 +1,2 @@
-frontUpper = 60
-frontLower = 0
-dead_end_list = 0
-turn_const = 0
-allowed_angle = 0
-too_close_dist = 0
-width = 80
-speed = 50
+test = 0
+speed = 80

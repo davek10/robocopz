@@ -361,8 +361,8 @@ public class GUI extends JFrame {
 	}
 	// Update textareas from information in int[] buffer
 	public static void update(int[] buffer){
-		updateSensor(Arrays.copyOfRange(buffer, 0, 5));
-		updateServo(Arrays.copyOfRange(buffer, 6, 23));
+		updateSensor(Arrays.copyOfRange(buffer, 0, 6));
+		updateServo(Arrays.copyOfRange(buffer, 6, 24));
 		updateInput();
 		updateDecisions(buffer[buffer.length - 2]);
 		updateMode(buffer[buffer.length - 1]);
@@ -459,12 +459,16 @@ public class GUI extends JFrame {
 	// Update mode given Integer buffer
 	static void updateMode(int buffer){
 		if(buffer == 1){
+			if(robotMode != Mode.AUTO){
+				UpdateImage(autoIMG);
+			}
 			robotMode = Mode.AUTO;
-			UpdateImage(autoIMG);
 			disableActions();
 		}else{
+			if(robotMode != Mode.CONTROL){
+				UpdateImage(controlIMG);
+			}
 			robotMode = Mode.CONTROL;
-			UpdateImage(controlIMG);
 			enableActions();
 		}
 		modeButton.setText(robotMode.getString());
